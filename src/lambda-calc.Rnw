@@ -1,0 +1,44 @@
+\subsection{\lcalc}
+\label{ax:lcalc}
+%\begin{mybox}
+\lcalc is defined by the grammar
+\[ e := x | e\,e | \lambda x . e \]
+where $x$ is a variable, $e_1\,e_2$ is application of a
+\lcalc expression $e_1$ on $e_2$, and $\lambda x . e$ is called
+an abstraction of \lcalc expression $e$. Abstractions represent
+defining functions in other programming languages, and applications represent
+function applications. The semantics of \lcalc can be defined by the $\beta$-reduction,
+which is formally stated as
+\[
+  (\lambda x . e_1)\,e_2 \underset{\beta}{\rightarrow} e_1 [e_2 / x ]
+\]
+where each instance of $x$ in the expression $e_1$ is replaced by $e_2$ using
+the following rules:
+\begin{align*}
+  x[e/x] &= e \\
+  y[e/x] &= y \\
+  (e_1\,e_2)[e/x] &= (e_1[e/x]\,e_2[e/x]) \\
+  (\lambda y.e_1)[e/x] &= \lambda y.(e_1[e/x])
+\end{align*}
+The main point of interest for us is that, \lcalc is
+\emph{Turing complete}, and hence equivalent in power to other forms of
+computation. Secondly, note that functions (abstractions) define only a single
+input variable. Taking multiple arguments --- for instance $(\lambda x\,y.e)\,a\,b$ ---
+is represented as
+\[
+  (\lambda x. \lambda y.e)\,a\,b \rightarrow (\lambda y.e[a/x])\,b \rightarrow e[a/x][b/y]
+\]
+This feature is called \emph{currying}. By convention, we write $\lambda x. \lambda y.e$
+as $\lambda x\,y . e$
+
+Let us define the term
+\[
+  comp = \lambda g. \lambda f. \lambda x.g\,(f\,x)
+\]
+This means that any \emph{function application} $g\,(f\,x)$ can be written as
+$comp\,g\,f$ (or in mathematical notation: $g \circ f$). This is called function
+composition.
+%\caption{$\lambda$-calculus}
+%\label{box:lambda}
+%\end{mybox}
+

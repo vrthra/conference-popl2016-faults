@@ -1,0 +1,98 @@
+\section{Methodology for Assessment}
+\label{sec:methodology}
+
+Our methodology was guided by two principles~\cite{siegmund2015views}:
+We sought to minimize the number of variables that were in play, striving to
+remove the effects of those variables whose impact was unknown.
+Second, our aim was to be as broadly general as possible in
+conclusions.  The programs from which we drew faults therefore had to be as realistic
+as possible, and the faults had to be real, and plausible enough
+to have happened in an environment where there was some standard of quality.
+
+For these reasons, we selected the Java common library projects from
+the Apache open-source project. Apache has a reputation of having a well maintained
+standard of quality for their projects, and the commits that go into their
+projects. They are also well known for having reasonably well tested projects.
+By choosing projects from a single source, we minimize the variability due
+to coding practices, development culture, and other possible confounding
+factors. However, the tradeoff is that Apache common library projects may not
+be representative of the broader software ecosystem. Further research is
+necessary to ensure that our findings remain valid for the broader ecosystem.
+
+\begin{table}
+\centering
+<<results='asis'>>=
+names(subjects) <- c('Projects', 'SLOC', 'TLOC', 'CPatches', 'Fails')
+print(xtablex(subjects, caption='Apache Projects'), floating=F);
+@
+\caption{Apache Commons Libraries. SLOC is the program size in LOC, TLOC
+is the test suite size in LOC, CPatches is the number of compiled patches,
+and Fails is the number of test failures.}
+\label{tbl:apache}
+\end{table}
+
+For our set of projects, we iterated through their commit
+logs, and generated reverse patches for each commit. For each patch thus
+created, we applied the patch on the latest repository, and removed any changes
+to the test directory, thus ensuring that the test suite we tested with was
+always the latest. Any patch that resulted in a compilation error was removed.
+This resulted in a set of patches for each project that could be independently
+applied. The complete test suite for the project was executed on each of the
+patches left, and any patch that did not result in a test failure was
+removed. The failed test cases that corresponded to each patch were thus
+collected. At this point, we had a set of patches that introduce specific test
+case failures.  The set of Apache projects, along with the set of reverse
+patches thus found, are given in Table~\ref{tbl:apache}.
+
+We conducted our remaining analysis in two parts. For the first part,
+we generated patch pairs by joining together two random patches for
+any given project. For the projects where the total number of unique pairs
+were larger than $100$, we randomly sampled $100$ of the pairs produced.
+After removing patch combinations that resulted in compilation errors, we had
+\Sexpr{nrow(faults.x.2.100)} patch combinations.
+We evaluated the test suite of each project against the pair-patches thus
+generated, and collected the test cases which failed against these.
+\begin{table}
+\centering
+<<results='asis'>>=
+coupled <- subset(hom, coupled == 'y')
+subsuming <- subset(hom, subsuming != 'n')
+nonsubsuming <- subset(hom, subsuming == 'n')
+strongsubsuming <- subset(hom, subsuming == '+')
+weaksubsuming <- subset(hom, subsuming == '.')
+
+data <- data.frame(count=integer(0))
+data['All','count'] <- nrow(hom)
+data['Coupled','count'] <- nrow(coupled)
+data['Subsuming','count'] <- nrow(subsuming)
+data['Strongly Subsuming','count'] <- nrow(strongsubsuming)
+data['Strongly Subsuming and Coupled','count'] <- nrow(subset(strongsubsuming, coupled == 'y'))
+data['Weakly Subsuming and Coupled','count'] <- nrow(subset(weaksubsuming, coupled == 'y'))
+data['Weakly Subsuming and De-coupled','count'] <- nrow(subset(weaksubsuming, coupled == 'n'))
+data['Non Subsuming and De-coupled','count'] <- nrow(subset(nonsubsuming, coupled == 'n'))
+data['Non Subsuming and Coupled','count'] <- nrow(subset(nonsubsuming, coupled == 'y'))
+x <- xtablex(data)
+align(x)[2] <- 'l'
+print(x, floating=F)
+@
+\caption{Higher Order Mutant Statistics}
+\label{tbl:hom}
+\end{table}
+Adopting the terminology of Jia et al.~\cite{jia2009higher}, out of
+\Sexpr{nrow(hom)}, we had \Sexpr{nrow(coupled)} coupled higher order
+mutants, and \Sexpr{nrow(subsuming)} subsuming mutants. Out of these,
+there were only \Sexpr{nrow(strongsubsuming)} strongly subsuming mutants. The
+details are given in Table~\ref{tbl:hom}.
+
+We tried to reduce the number of external variables further for the second
+part, and chose a single large project --- \emph{Apache commons-math}.
+We generated a set of combined patches by joining 2, 4, 8, 16, 32, and 64
+patches at random, and evaluated the test suite for Apache commons-math against
+each of these combined $k^{th}$ order patches. We removed all patches that
+resulted in any compilation errors. This resulted in
+\Sexpr{nrow(faults.math.x.100)} patch combinations.
+
+For both parts of our analysis, we generated two sets. The first set containing the unique
+failures from the constituent faults in isolation, and the second, containing
+failures from the joined patches.
+

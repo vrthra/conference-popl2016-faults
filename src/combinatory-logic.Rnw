@@ -1,0 +1,25 @@
+\subsection{\clogic}
+\label{ax:clogic}
+%\begin{mybox}
+  The $S,K,I$ combinators provide a simpler Turing-complete basis for
+computation. Their grammar is defined by
+\[ t := S|K|I| t\,t\]
+The semantics of combinators are defined in \lcalc as
+\begin{align*}
+  I &= \lambda x.x \\
+  K &= \lambda x\,y . x \\
+  S &= \lambda x\,y\,z . x\,z\,(y\,z)
+\end{align*}
+The point of SKI combinators is that the concept of variables is completely
+removed, and any arbitrary computation can be represented as expressions that
+have just $S$, $K$, and $I$ combinators in them. For example, the famous
+fix-point combinator that allows recursion in \lcalc
+(the $Y$-combinator) is expressed as
+\[
+Y = =S\,S\,K\,(S\,(K\,(S\,S\,(S\,(S\,S\,K))))\,K)
+%Y = S\,(K\,(S\,I\,I))\,(S\,(S\,(K\,S)\,K)\,(K\,(S\,I\,I)))))\\
+\]
+%\caption{Combinatory logic --- SKI combinators}
+%\label{box:ski}
+%\end{mybox}
+

@@ -1,0 +1,85 @@
+%\usepackage{cite}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\newcommand{\cL}{{\cal L}}
+\usepackage{placeins}
+\usepackage{xspace}
+\usepackage{boxedminipage}
+\usepackage{tikz}
+
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+\usepackage[bookmarks=false, urlcolor=blue, linkcolor=blue, citecolor=blue, colorlinks=true]{hyperref} %\usepackage[center]{caption}
+%\linespread{2}
+\usepackage{comment}
+
+\usepackage{listings}
+\usepackage{float}
+\floatstyle{plain}
+\newfloat{program}{t}{lop}
+\floatname{program}{Figure}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{lightgray}{gray}{0.75}
+
+\newcommand\greybox[1]{%
+  \vskip\baselineskip%
+  \par\noindent\colorbox{lightgray}{%
+    \begin{minipage}{0.99\columnwidth}#1\end{minipage}%
+  }%
+  \vskip\baselineskip%
+}
+
+\usepackage{blindtext}
+\usepackage{framed}
+
+\floatstyle{boxed}
+\newfloat{infobox}{tbp}{ext}
+\restylefloat*{infobox}
+\floatname{infobox}{Note}
+
+\floatstyle{ruled}
+%\floatstyle{boxed}
+\newfloat{mybox}{thp}{lop}
+\floatname{mybox}{Box}
+
+\newcommand{\faultT}{composite fault hypothesis\xspace}
+\newcommand{\FaultT}{Composite fault hypothesis\xspace}
+\newcommand{\efaultT}{\emph{\faultT}\xspace} %          composite fault hypothesis
+\newcommand{\eFaultT}{\emph{\FaultT}\xspace} %          Composite fault hypothesis
+
+\newcommand{\couplingC}{composite coupling\xspace}%          composite coupling
+\newcommand{\CouplingC}{Composite coupling\xspace}%          Composite coupling
+\newcommand{\kappaT}{\couplingC ratio\xspace}%          composite coupling ratio
+\newcommand{\KappaT}{\CouplingC ratio\xspace}%          Composite coupling ratio
+
+\newcommand{\thece}{the \emph{coupling effect}\xspace}
+\newcommand{\Thece}{The \emph{coupling effect}\xspace}
+
+\newcommand{\finput}{\emph{domain}\xspace}
+\newcommand{\fInput}{\emph{Domain}\xspace}
+\newcommand{\foutput}{\emph{co-domain}\xspace}
+\newcommand{\fOutput}{\emph{Co-Domain}\xspace}
+
+\newcommand{\oHypothesis} {
+complex faults are coupled to simple faults in such
+a way that a test data set that detects all simple faults in a program
+will detect a high percentage of the complex faults.}
+
+\newcommand{\cHypothesis}{
+  Tests detecting a fault in isolation will (with high probability $\kappa$) continue to
+detect the fault even when it occurs in combination with
+other faults.\xspace
+}%
+
+
+\newcommand{\lcalc}{$\lambda$-calculus\xspace}
+\newcommand{\clogic}{Combinatory-logic\xspace}
+\newcommand{\qfunction}{\emph{q}-function\xspace}
+\newcommand{\qfunctions}{\emph{q}-functions\xspace}

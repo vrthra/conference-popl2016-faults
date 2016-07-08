@@ -1,0 +1,201 @@
+\section{Analysis}
+\label{sec:analysis}
+There are two questions that we tackle here. The first investigates the
+fraction of test cases that detect any of the constituent mutants that
+also detect the combined mutant. That is, evaluates the following prediction
+from the model:
+``Given two faults, and the test cases killing each, (assuming a sufficiently
+large \finput and \foutput, and ignoring the effects of strong interaction),
+there is a high probability for the same test cases to kill the combined
+fault.''
+
+The second investigates the general coupling effect. Note that general coupling
+effect does not distinguish between strong and weak interaction.
+Since the general coupling ratio does not distinguish between strong and weak
+interaction, this also serves as an evaluation of the strong interaction
+between faults where inputs other than the original $i$ and $j$ -- that is
+outside $i \cup j$ becomes faulty (where $i$ represents faulty inputs to $f$
+due to faults in $h$, and $j$ represents faulty inputs to $f$ due to faults in $g$).
+
+Indeed, we believe that strong interaction between different faults is
+rarer than weak interaction. While there is no easy way to verify it, one may look
+at the newer faults (new test failures) that are introduced by a combination of patches
+when compared to the original patches as instances of strong fault interaction
+(These are not the only instances, since some of the older tests could also
+be failing on new behaviors. Further, some of the instances where new tests are
+failing could also be due to too strict assertions failing only when multiple
+conditions are satisfied. However, it is a reasonable proxy).
+
+Our empirical evaluation does not require individual patches to be simple
+faults. Rather, we are investigating the probability of fault masking
+between \emph{any} two patches. Our theory suggests that irrespective of
+whether the faults are complex or not, we can expect the same fault masking
+probability.
+
+\subsection{All Projects}
+This section investigates fault pairs constructed from all projects.
+\subsubsection{The Composite Fault Model}
+Here, we try to answer the question: \emph{what percentage of test cases
+detecting constituent faults can detect the complex faults?}
+
+\begin{figure}[t]
+\centering\textbf{All Projects: \couplingC}\par\medskip
+<<results='asis', fig.height=4, out.width='.99\\linewidth', echo=F, message=F, warn=F,fig.lp="fig:">>=
+ggplot(faults.x.2.100, aes(y=I(SeparateFaults - RemovedFaults),x=SeparateFaults)) +
+  geom_point(aes(color=project), size=1) +
+  theme(legend.position="none") +
+  scale_y_log10() +
+  scale_x_log10() +
+  labs(x='Test fails for separated faults', y='Test fails for combined Faults') + #, title='All Projects: \\couplingC')
+  theme(text = element_text(size=18))
+@
+\caption{The size of set of the test cases able to detect the faults when they were separate is in the \emph{x-axis},
+and the \emph{subset of the same test cases} able to detect the combined fault is in the \emph{y-axis}. Different projects
+are indicated by different colors.
+The two projects that have a slightly below the mean relation between X and Y axis from other projects are \emph{commons-io} and \emph{commons-beanutils}.}
+\label{fig:allfaults}
+\end{figure}
+
+Figure~\ref{fig:allfaults} plots the set of test cases able to detect
+the faults when they were separate with the set of test cases able to
+detect the combined fault.
+
+To analyze the fraction of test cases expected to detect the combined mutant,
+we evaluate the regression model given by:
+\begin{equation}
+\mu\{AfterT | BeforeT \} = \beta_0 + \beta_1 \times BeforeT
+\label{eq:e1}
+\end{equation}
+where $BeforeT$ is the size of the test suite that includes all test cases that
+can detect both faults separately, and $AfterT$ is the size of the test suite
+which is a subset of $BeforeT$ that can detect the fault pair when combined.
+We force $\beta_0$ to zero to account for the fact that if no test cases
+detected the original mutant, then the question of their fraction does not
+arise.
+This linear regression model lets us predict the number of test fails for
+combined faults from the test fails for separated faults.
+
+We note that we are interested in $\beta_1$ for another purpose. $\beta_1$ is
+also the \couplingC ratio $\kappa$. Thus this regression provides us with
+a model for prediction, its goodness of fit ($R^2$), and also the \couplingC ratio.
+
+\subsubsection{The General Coupling Model}
+%It is investigated using a sample of the population of real faults, and their combinations
+\begin{figure}[t]
+\centering\textbf{All Projects: general coupling}\par\medskip
+<<results='asis', fig.height=4, out.width='.99\\linewidth', echo=F, message=F, warn=F,fig.lp="fig:">>=
+ggplot(faults.x.2.100, aes(y=JoinedFaults,x=SeparateFaults)) +
+  geom_point(aes(color=project), size=1) +
+  theme(legend.position="none") +
+  scale_y_log10() +
+  scale_x_log10() +
+  labs(x='Test fails for separated faults', y='Test fails for combined Faults') + #, title='All Projects: general coupling')
+  theme(text = element_text(size=18))
+@
+\caption{The size of the set of test cases able to detect
+  the faults when they were separate is the \emph{x-axis},
+  and the \emph{set of all test cases} able to detect the combined fault is in the \emph{y-axis}. Different projects
+are indicated by different colors.
+The three projects that have a slightly different relation between X and Y axis from other projects are \emph{commons-io} and \emph{commons-beanutils} (below the mean), and \emph{commons-dbcp} (above the mean).
+}
+\label{fig:allfaults1}
+\end{figure}
+Figure~\ref{fig:allfaults1} plots the general coupling of faults.
+To answer this question, we evaluate the following regression model.
+\begin{equation}
+\mu\{NewT | BeforeT \} = \beta_0 + \beta_1 \times BeforeT
+\label{eq:e2}
+\end{equation}
+where $BeforeT$ is the size of the test suite that includes all test cases that
+can detect both faults separately, and $NewT$ is the size of the test suite
+that can detect the fault pair when combined.
+Note that we do not set $\beta_0 = 0$ here as the combined fault pair may be
+detected by a new test case even if its constituents were not detected. In fact,
+$\beta_0$ represents the complex faults that became detectable due to
+interaction even though the constituent faults are not detectable.
+
+However, if one wishes to investigate the general coupling ratio, we have to
+investigate a simpler regression model, because the general coupling ratio does
+not permit an intercept.
+\begin{equation}
+\mu\{NewT | BeforeT \} = \beta_1 \times BeforeT
+\label{eq:e3}
+\end{equation}
+
+Here, similar to the previous section, $\beta_1$ corresponds to the general coupling ratio $C$.
+
+\subsubsection{Strong fault interaction}
+
+The incidence of strong fault interaction may be ascertained by the average number of new test
+cases that failed for the combined patch. Note that this number is not exhaustive, as some of
+the original test cases may fail for new faulty behavior too, even if the behavior is not same as that of the component faults.
+
+\subsection{Apache Commons-math}
+
+\subsubsection{The Composite Fault Model}
+We try to answer the question \emph{what percentage of test cases detecting constituent faults can detect the complex faults?} for Apache Commons-math.
+
+Figure~\ref{fig:mathfaults} plots the set of test cases able to detect
+the faults when they were separate with the set of test cases able to
+detect the combined fault. We rely on the regression given by Equation~\ref{eq:e1}
+to answer this question.
+
+
+\begin{figure}[t]
+\centering\textbf{Commons-math: \couplingC}\par\medskip
+<<results='asis', fig.height=4, out.width='.99\\linewidth', echo=F, message=F, warn=F,fig.lp="fig:">>=
+faults.math <- faults.math.x.100
+faults.math$l <- factor(log2(faults.math$power))
+ggplot(faults.math, aes(y=I(SeparateFaults - RemovedFaults),x=SeparateFaults)) +
+  geom_point(aes(color=l), size=1) +
+  #theme(legend.position="top") +
+  scale_y_log10() +
+  scale_x_log10() +
+  labs(x='Test fails for separated faults', y='Test fails for combined faults') + #, title='Math: \\couplingC')
+  theme(text = element_text(size=18), legend.justification=c(1,0), legend.position=c(1,0)) +
+  scale_colour_discrete(name="Combinations",
+    breaks=c(1, 2, 3, 4, 5, 6),
+    labels=c("2", "4", "8", "16", "32", "64"))
+@
+\caption{The set of test cases able to detect the faults when they were separate is in the \emph{x-axis},
+  and the \emph{subset of the same test cases} able to detect the combined fault is in the \emph{y-axis}.
+The different number of patch combinations used are indicated by different colors.
+}
+\title{Commons-math: \couplingC}
+
+\label{fig:mathfaults}
+\end{figure}
+
+
+\subsubsection{The General Coupling Model}
+%semantic size of complex faults compared to their constituent faults?
+Figure~\ref{fig:mathfaults1} plots the general coupling of faults for \emph{Apache commons math}.
+We rely on the regressions given by Equation~\ref{eq:e2} and Equation~\ref{eq:e3} to answer this question.
+
+
+\begin{figure}[t]
+\centering\textbf{Commons-math: general coupling}\par\medskip
+<<results='asis', fig.height=4, out.width='.99\\linewidth', echo=F, message=F, warn=F,fig.lp="fig:">>=
+ggplot(faults.math, aes(y=JoinedFaults,x=SeparateFaults)) +
+  geom_point(aes(color=l), size=1) +
+  #theme(legend.position="top") +
+  scale_y_log10() +
+  scale_x_log10() +
+  labs(x='Test fails for separated faults', y='Test fails for combined faults') + #, title='Math: general coupling')
+  theme(text = element_text(size=18), legend.justification=c(1,0), legend.position=c(1,0)) +
+  scale_colour_discrete(name="Combinations",
+    breaks=c(1, 2, 3, 4, 5, 6),
+    labels=c("2", "4", "8", "16", "32", "64"))
+@
+\caption{The set of test cases able to detect the faults when they were separate is in the \emph{x-axis},
+  and the \emph{set of all test cases} able to detect the combined fault is in the \emph{y-axis}.
+  The different number of patch combinations used are indicated by different colors.
+}
+
+\label{fig:mathfaults1}
+\end{figure}
+
+\subsubsection{Strong fault interaction}
+
+The incidence of strong fault interaction may be ascertained by the average number of new test
+cases that failed for the combined patch. The difference of note here is that the number of patches are larger, and hence the chances of strong interaction are correspondingly larger.

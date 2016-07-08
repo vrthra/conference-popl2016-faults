@@ -1,0 +1,31 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+The \emph{coupling effect} hypothesis is a general theory of fault interaction,
+and is used to quantify \emph{fault masking}. It also finds use in mutation
+analysis. While there is compelling empirical evidence for the
+\emph{coupling effect}, our theoretical understanding is lacking. The extant theory
+by Wah is too restrictive to be useful for real world systems.
+We address this limitation, and provide a stronger, modified version of
+the theory called the \efaultT.
+
+We provide a theory of fault coupling applicable to general
+functions (with some restrictions). It incorporates syntactical neighborhoods
+and clarifies assumptions made. We show that even under real world conditions,
+the \efaultT holds.
+
+Our theoretical analysis suggests that the \faultT has
+a high probability of occurring ($1 - \frac{1}{n}$, where $n$ is the \foutput
+of the function under consideration) under the assumptions of total functions,
+finite \finput, and separability of faults, \emph{irrespective of the size of
+the system}.
+
+Our empirical study provides validation, and an empirical approximation of
+the \couplingC ratio
+$\kappa$ (0.99), with 99\% of the test cases that detected a fault in
+isolation continuing to detect it when it is combined with other faults.
+
+Finally, the \emph{general coupling effect} has never been demonstrated for
+real faults. Our empirical analysis also provides firm evidence in favor of the
+\emph{general coupling effect} ($C = 99\%$) for real faults.
+

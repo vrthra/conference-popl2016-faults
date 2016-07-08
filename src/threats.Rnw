@@ -1,0 +1,75 @@
+%External validity: Our formulation has been validated only using unit test
+%suites. There exist a chance that system tests may have different behavior.
+
+\section{Threats to Validity}
+\label{sec:threats}
+
+While we have taken every care to ensure that our results are unbiased, and
+have tried to eliminate the effects of random noise, our results are subject
+to the following threats to validity.
+
+\subsection{Threats to Theoretical Analysis}
+Our theoretical analysis relies on a main assumption, that all the faults of
+a function have an equal probability of being chosen. We discussed the
+effect of syntax on our model in Section~\ref{sec:theory}, where we noted
+that syntax should not have a large impact so long as its impact is similar
+across functions with expected output, and functions which do not have the
+expected output. While there does not seem to be any reason to suspect
+otherwise, and the results of empirical analysis seem to bear out our
+theoretical result, there exists a possibility that this assumption is
+unwarranted in general, or may depend on the particular program being
+considered.
+
+A second assumption that we made in the theoretical analysis is that the
+\foutput of function being considered is large. To indicate the impact of
+this assumption, for a function with binary \foutput (only true, and false are
+allowed as output), there is $50\%$ chance of masking, and hence only 50\%
+chance of coupling. However, the situation changes proportionally with
+larger \foutput, with faults in a function with a possibility of output of even
+$100$ unique values have $99\%$ chance of coupling. Hence,
+we believe that the assumption of large \foutput is warranted on average.
+
+Our theoretical analysis is incomplete for cases of more complex execution
+paths where there may be cases where the solved templates for recursion and
+iteration may not apply. This may also have an impact on the actual fault
+masking for specific programs that do not fit into these templates.
+
+Finally, we assumed that programs corresponded to mathematical functions when
+taking that there were $n^m$ alternatives to a program $h \in : M \rightarrow N $.
+However, in real world, syntax plays a much larger role, and there are
+an infinite number of equivalent programs with exactly the same \finput and
+\foutput. However, we note that the assumption --- that there is some relation 
+between the domain of a function, and its complexity (and hence the number of
+test cases required to test it) --- is routinely made in black box testing.
+
+We note that our empirical analysis does not verify the major difference
+that we suggested from Wah's analysis --- that coupling effect does not weaken
+with system size. This is not taken up here due to the significant investment
+in finding and testing systems that are large enough. This is an avenue for
+future work.
+
+\subsection{Threats to Empirical Analysis}
+
+\noindent\textbf{Threats due to sampling bias:} To ensure that our results were
+representative of real world programs, with non-trivial faults, we opted for
+Java projects from the Apache commons library. We used all projects
+that we could build and complete testing. Further, we used all patches that
+could be applied in isolation and resulted in a valid build, with at least
+one test failure, which indicated that the patch fixed something in the
+project. This however, implies that our sample of programs could be biased by
+any factor that skews the kind of projects that the Apache community works on,
+or their development practices. The representativeness of our sample patches
+are also impacted by any factor that may skew the independent patches that
+we extracted.
+
+\noindent\textbf{Projects of differing maturity, and quality:} Since we used
+real world projects from the Apache commons library, the maturity and quality
+of these projects is representative of the real world.
+However, not all projects have been in development for a long time, and hence
+have a different distribution of faults from what is typically expected in an
+industrial setting with a high standard of quality. To counter this threat
+we evaluated Apache commons-math --- the largest, most mature, and highest
+quality project which had 90\% statement coverage and 73.2\% mutation score for
+our analysis for the second part. The results from Apache commons-math seem to
+indicate that our experiment is relatively unbiased in this direction.
+

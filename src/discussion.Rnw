@@ -1,0 +1,119 @@
+\section{Discussion}
+\label{sec:discussion}
+
+Fault masking is one of the key concerns in software testing. The
+\emph{coupling effect} hypothesis asserts that fault masking is rare,
+and describes the general impact of interactions between
+faults. Unfortunately, very little is known about the theory behind
+fault coupling. We study the \emph{coupling effect} and fault masking
+using a theoretical model, and evaluate our findings empirically.
+
+Since the formal statement of \emph{coupling effect}
+is vague and ambiguous, we provide a more concrete
+definition (called the \efaultT to avoid confusion) ---
+\textit{\cHypothesis}
+
+We theoretically evaluate the \efaultT.
+Our analysis shows that for any pair of separable faults, the \couplingC
+effect exists. We find that \kappaT $\kappa = 1 - \frac{1}{n}$, where $n$
+is the \foutput of the function being considered. We also show that the
+consideration of the syntactical neighborhood does not have an adverse impact on
+our result. Further, according to Wah, as system size increases, and
+number of functions in the execution path nears the domain of function,
+\thece weakens exponentially. However, our results suggest
+that the mean coupling ratio remains the same at $\frac{1}{n}$.
+
+Why is our prediction on fault masking so important? The reason is
+that basic testing relies on fault masking to a large extent. That is,
+say you are unit testing a function with multiple faults, and some of
+the faults are left undetected due to fault masking. Wah's analysis
+suggests that when we integrate these units into a larger system, the faults
+in larger system has a much larger (indeed exponential) tendency to self
+correct, and avoid failure due to masking. Our analysis suggests that
+even on larger systems composed of smaller systems, the rate of fault
+masking remains the same.
+
+We next empirically validated the \efaultT. Our subjects were numerous
+and this allows us to make a strong general claim about the composite
+coupling ratio $\kappa$, and also about the traditional coupling ratio $C$.
+
+We also proposed the existence of strongly interacting faults, which cannot
+be accounted for within the formal coupling theory. Our empirical analysis
+(see Table~\ref{tbl:summaryall} and Table~\ref{tbl:summarymath}) indicates
+that strong interaction is possibly rare, occurring at a similar frequency as
+fault masking.
+
+Examining Figure~\ref{fig:allfaults}, we note that while there is some
+reduction in the combined faults for the faults with smaller semantic footprint
+(as given by the number of test cases that failed for that fault) with respect
+to constituent faults, the difference vanishes when the size of the fault
+increases. This same effect is also seen in Figure~\ref{fig:mathfaults}.
+% It might also be noticed that for two projects (these were \emph{commons-io}
+% and \emph{commons-beanutils}) very small constituent faults (with less than
+% 10 test case failures) failures from complex faults are somewhat smaller than
+% average, while for \emph{commons-dbcp}, the semantic size is slightly larger
+% than average.
+% (These were the only projects with statistically significant deviation in an anova).
+
+The results for regression (Equation~\ref{eq:e1}) across all projects, and Apache
+commons-math also suggests a similar observation --- that test cases that
+are able to detect a fault in isolation will with very high probability detect
+the same fault in combination with other faults.
+
+A counter-intuitive result is suggested by the regression
+(Equation~\ref{eq:e3}) comparing the semantic sizes of constituent faults and
+combined faults. Table~\ref{tbl:xallsemantic} and Table~\ref{tbl:xmathsemantic}
+suggest that the coefficient for $SeparateFaults$ is less than unity, which
+means that when separate, the faults have a slightly larger semantic footprint
+than when combined --- possibly due to fault interactions. However, we note that
+the effect is not statistically significant for all projects. The coefficient
+for separate faults for Table~\ref{tbl:xallsemantic} lies between
+\{\Sexpr{dfmt(confint(xasres.lm)['SeparateFaults',])}\}, and the
+coefficient for separate faults for Table~\ref{tbl:xmathsemantic} lies between
+\{\Sexpr{dfmt(confint(xmsres.lm)['SeparateFaults',])}\} --- 95\% confidence
+interval, $p < 0.0001$.
+
+Overall, our statistical analysis suggests that there is a very high
+probability (between
+\{\Sexpr{dfmt(confint(ares.lm)['SeparateFaults',])}\} for all projects, and
+\{\Sexpr{dfmt(confint(mres.lm)['SeparateFaults',])}\} for Apache commons-math ---
+95\% confidence interval with statistical significance $p < 0.0001$) that when
+two faults are paired to produce a combined fault, any test cases that detected
+either of the faults continue to detect the combined fault.
+
+% Finally, we have already shown~\cite{gopinath2015howhard} that we can use
+% sampling to approximate the mean of the entire population of faults.
+Our results for Table~\ref{tbl:xallsemantic} suggests that between
+\{\Sexpr{dfmt(confint(xasres.lm)['SeparateFaults',])}\} of complex
+faults are caught (95\% confidence interval, $p < 0.0001$).
+This is again confirmed by the deeper analysis of
+\emph{Apache commons-math}, using larger size faults in Table~\ref{tbl:xmathsemantic}
+which suggests that between
+\{\Sexpr{dfmt(confint(xmsres.lm)['SeparateFaults',])}\} fraction of complex
+faults are caught (95\% confidence interval, $p < 0.0001$).
+We note that this is the first confirmation of the \emph{general coupling effect}
+(unlike the \emph{mutation coupling effect} which has been validated multiple times).
+Why is validating the general coupling effect important? We already know that faults
+emulated by traditional mutants are only a subset of the possible kinds of faults
+(Just et al.~\cite{just2014mutants} found that up to 27\% of faults were inadequately
+represented by mutants). Hence, it is important to verify the \emph{general coupling
+effect} using real faults so that our results are applicable for faults in
+general, and especially for possible future mutation operators. Indeed,
+the \emph{mutation coupling effect} has been
+validated multiple times, and we do not attempt it again here.
+
+How much difference is there between the traditional general coupling ratio $C$ and
+the \kappaT $\kappa$? Our analysis finds that in general, there is less than a percentage
+drop for the \kappaT from the traditional coupling ratio.
+
+
+There is another point that is of interest in our approach. Research in software
+reliability, and software testing often relies on curated sets of
+faults~\cite{just2014mutants,demillo1991on} that took manual effort to produce.
+The paucity of such fault databases has held back research in software testing
+to some extent. This also means that there is a high chance of skew either due to
+manual bias, or due to the projects selected.
+Our technique is entirely automated. When a representative set of code
+repositories are available, our methodology can be used to produce faults with
+relatively less skew from external variables.
+

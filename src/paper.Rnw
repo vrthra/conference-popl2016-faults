@@ -1,0 +1,143 @@
+\documentclass[preprint,nonatbib]{sigplanconf}
+\input{meta}
+\newcommand*\per{\scalebox{.5}{\%}}
+
+<<stats, echo=F>>=
+library(ggplot2)
+library(knitr)
+library(xtable)
+load('../_R/.RData')
+@
+
+\begin{document}
+\special{papersize=8.5in,11in}
+\setlength{\pdfpageheight}{\paperheight}
+\setlength{\pdfpagewidth}{\paperwidth}
+
+\conferenceinfo{CONF 'yy}{Month d--d, 20yy, City, ST, Country}
+\copyrightyear{2017}
+\copyrightdata{978-1-nnnn-nnnn-n/yy/mm}
+\copyrightdoi{nnnnnnn.nnnnnnn}
+
+\input{header}
+\maketitle
+<<abstract, child='abstract.Rnw'>>=
+@
+
+\category{D}{2}{4}
+
+\begin{comment}
+\begin{CCSXML}
+  <ccs2012>
+  <concept>
+  <concept_id>10011007.10011074.10011099.10011693</concept_id>
+  <concept_desc>Software and its engineering~Empirical software validation</concept_desc>
+  <concept_significance>500</concept_significance>
+  </concept>
+  </ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Software and its engineering~Empirical software validation}
+\end{comment}
+
+% general terms are not compulsory anymore,
+% you may leave them out
+\terms
+faults, coupling
+
+\keywords
+test frameworks, evaluation of coverage, coverage criteria, statistical analysis
+
+
+% 10 (include figures and appendices but not reference) + 1 (references)
+% we investigate another dimension vis patterns.
+\begin{comment}
+<<setup, include=FALSE, cache=FALSE, message=FALSE, echo=FALSE>>=
+render_listings()
+
+library(reshape2)
+library(plyr)
+
+library(scales)
+library(xtable)
+library(ggplot2)
+library(grid)
+theme = theme_set(theme_minimal())
+knit_hooks$set(error = function(x, options) stop(x));
+knit_hooks$set(inline = function(x) prettyNum(x, big.mark=",", small.mark=''));
+@
+\end{comment}
+
+<<a,message=F, echo=F>>=
+library(MuPapers)
+v=data(package='MuPapers')
+data(list = v$results[,3])
+
+library(MutCoupling)
+v=data(package='MutCoupling')
+data(list = v$results[,3])
+@
+\setlength\tabcolsep{2pt}
+
+<<>>=
+@
+% 10 pages for the main text
+<<introduction, child='introduction.Rnw'>>=
+@
+% 1. Describe the problem
+% 2. State your contributions
+
+<<related, child='related.Rnw'>>=
+@
+
+<<theory, child='theory.Rnw'>>=
+@
+
+<<methodology, child='methodology.Rnw'>>=
+@
+
+<<analysis, child='analysis.Rnw'>>=
+@
+
+<<results, child='results.Rnw'>>=
+@
+
+<<discussion, child='discussion.Rnw'>>=
+@
+
+<<threats, child='threats.Rnw'>>=
+@
+
+<<conclusion, child='conclusion.Rnw'>>=
+@
+
+%\appendix
+%\section{Appendix}
+%<<lcacl, child='lambda-calc.Rnw'>>=
+%@
+
+%<<lcacl, child='combinatory-logic.Rnw'>>=
+%@
+% This is the text of the appendix, if you need one.
+
+% \acks
+
+% Acknowledgments, if needed.
+
+% % We recommend abbrvnat bibliography style.
+
+% \bibliographystyle{abbrvnat}
+
+% % The bibliography should be embedded for final submission.
+
+% \begin{thebibliography}{}
+%     \softraggedright
+
+%   \bibitem[Smith et~al.(2009)Smith, Jones]{smith02}
+%     P. Q. Smith, and X. Y. Jones. ...reference text...
+
+% \end{thebibliography}
+%\balance
+\bibliographystyle{acm}
+\bibliography{paper}
+\end{document}

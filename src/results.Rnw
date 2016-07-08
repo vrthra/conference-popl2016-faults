@@ -1,0 +1,158 @@
+\section{Results}
+\label{sec:results}
+\subsection{All Projects}
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+<<results='asis'>>=
+ares.lm <- lm(SeparateFaults-RemovedFaults~0+SeparateFaults,data=faults.x.2.100)
+ares <- summary(ares.lm)
+print(xtablex(ares), floating=F)
+@
+}
+\caption{All projects regression for \kappaT. $R^2=$\Sexpr{fmt(ares$r.squared)}}
+\label{tbl:allfraction}
+\end{table}
+The results for regression for Equation~\ref{eq:e1} for all projects is
+given in Table~\ref{tbl:allfraction}.
+The correlation between the dependent
+and independent variable is \Sexpr{fmt(ares$r.squared)}.
+The \couplingC ratio
+was found to be \Sexpr{fmt(as.data.frame(ares$coefficients)$Estimate)}.
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+<<results='asis'>>=
+asres.lm <- lm(JoinedFaults~SeparateFaults,data=faults.x.2.100)
+asres <- summary(asres.lm)
+print(xtablex(asres), floating=F)
+@
+}
+\caption{All projects regression. $R^2=$\Sexpr{fmt(asres$r.squared)}}
+\label{tbl:allsemantic}
+\end{table}
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+<<results='asis'>>=
+xasres.lm <- lm(JoinedFaults~0+SeparateFaults,data=faults.x.2.100)
+xasres <- summary(xasres.lm)
+print(xtablex(xasres), floating=F)
+@
+}
+\caption{All projects regression for general coupling ratio. $R^2=$\Sexpr{fmt(xasres$r.squared)}}
+\label{tbl:xallsemantic}
+\end{table}
+The results for regression for Equation~\ref{eq:e2} for all projects is
+given in Table~\ref{tbl:allsemantic}.
+The correlation between the dependent
+and independent variable is \Sexpr{fmt(asres$r.squared)}.
+The results for regression for Equation~\ref{eq:e3} for all projects is
+given in Table~\ref{tbl:xallsemantic}.
+The general coupling ratio
+was found to be \Sexpr{fmt(as.data.frame(xasres$coefficients)$Estimate)}.
+Further, the mean number of faulty test cases that were not present in the
+component faults were found to be \Sexpr{mean(faults.x.2.100$addedfails)}.
+See Table~\ref{tbl:summaryall} for the summary.
+\begin{table}
+\centering
+\resizebox{0.9\linewidth}{!}{
+<<results='asis'>>=
+colnames(faults.x.2.100) <-  c('project','number','SeparateFaults',
+                               'JoinedFaults','RemovedFaults','AddedFaults')
+x <- aggregate(.~project, faults.x.2.100[,-c(7)], mean)
+rownames(x) <- x$project
+x <- subset(x, select=-c(1,2))
+print(xtablex(x), floating=F, include.rownames=T)
+@
+}
+\caption{Summary for all projects. The SeparateFaults column shows the number
+of faults when patches were separately analyzed, and JoinedFaults column
+shows the number of faults when patches were combined and analyzed.
+RemovedFaults shows the number of faults from SeparateFaults that were
+removed in JoinedFaults, and AddedFaults shows the number of newly added
+faults that were not in SeparateFaults.}
+\label{tbl:summaryall}
+\end{table}
+
+\subsection{Apache commons-math}
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+<<results='asis'>>=
+mres.lm <- lm(I(SeparateFaults-RemovedFaults)~0+SeparateFaults,data=faults.math.x.100)
+mres <- summary(mres.lm)
+print(xtablex(mres), floating=F)
+@
+}
+\caption{Commons-math regression for \kappaT. $R^2=$\Sexpr{fmt(mres$r.squared)}}
+\label{tbl:mathfraction}
+\end{table}
+The results for regression for Equation~\ref{eq:e1} for all projects is
+given in Table~\ref{tbl:mathfraction}.
+The correlation between the dependent
+and independent variable is \Sexpr{fmt(mres$r.squared)}.
+The \couplingC ratio
+was found to be \Sexpr{fmt(as.data.frame(mres$coefficients)$Estimate)}.
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+<<results='asis'>>=
+msres.lm <- lm(JoinedFaults~SeparateFaults,data=faults.math.x.100)
+msres <- summary(msres.lm)
+print(xtablex(msres), floating=F)
+@
+}
+\caption{Commons-math regression. $R^2=$\Sexpr{fmt(msres$r.squared)}}
+\label{tbl:mathsemantic}
+\end{table}
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+<<results='asis'>>=
+xmsres.lm <- lm(JoinedFaults~0+SeparateFaults,data=faults.math.x.100)
+xmsres <- summary(xmsres.lm)
+print(xtablex(xmsres), floating=F)
+@
+}
+\caption{Commons-math regression for general coupling ratio. $R^2=$\Sexpr{fmt(xmsres$r.squared)}}
+\label{tbl:xmathsemantic}
+\end{table}
+The results for regression for Equation~\ref{eq:e2} for commons-math is
+given in Table~\ref{tbl:mathsemantic}.
+The correlation between the dependent
+and independent variable is \Sexpr{fmt(msres$r.squared)}.
+The results for regression for Equation~\ref{eq:e3} for commons-math is
+given in Table~\ref{tbl:xmathsemantic}.
+The general coupling ratio
+was found to be \Sexpr{fmt(as.data.frame(xmsres$coefficients)$Estimate)}.
+Further, the mean number of faulty test cases that were not present in the
+component faults were found to be \Sexpr{mean(faults.math.x.100$addedfails)}.
+See Table~\ref{tbl:summarymath} for the summary.
+% The interesting thing here
+% is how the fault masking (RemovedFaults) and possible strong interaction
+% (AddedFaults) increase along with the increase in number of patches.
+
+\begin{table}
+\centering
+\resizebox{0.9\linewidth}{!}{
+<<results='asis'>>=
+colnames(faults.math.x.100) <-  c('project','power','number','SeparateFaults',
+                               'JoinedFaults','RemovedFaults','AddedFaults')
+x <- aggregate(.~power, faults.math.x.100[,-c(1)], mean)
+rownames(x) <- x$power
+x <- subset(x, select=-c(1,2))
+print(xtablex(x), floating=F, include.rownames=T)
+@
+}
+\caption{Summary for all Commons-math. The rownames indicate the number of
+  patches involved.
+  The SeparateFaults column shows the number
+of faults when the patches were separately analyzed, and JoinedFaults column
+shows the number of faults when the patches were combined and analyzed.
+RemovedFaults indicate the number of faults from SeparateFaults that were
+removed in JoinedFaults, and AddedFaults indicate the number of newly added
+faults that were not in SeparateFaults.}
+\label{tbl:summarymath}
+\end{table}
+

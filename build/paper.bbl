@@ -1,0 +1,245 @@
+\begin{thebibliography}{10}
+
+\bibitem{alkhanjari2003investigating}
+{\sc Al-Khanjari, Z.~A., and Woodward, M.~R.}
+\newblock Investigating the partial relationships between testability and the
+  dynamic range-to-domain ratio.
+\newblock {\em Australasian Journal of Information Systems 11\/} (2003).
+
+\bibitem{andrews2005mutation}
+{\sc Andrews, J.~H., Briand, L.~C., and Labiche, Y.}
+\newblock Is mutation an appropriate tool for testing experiments?
+\newblock In {\em International Conference on Software Engineering\/} (2005),
+  IEEE, pp.~402--411.
+
+\bibitem{andrews2006using}
+{\sc Andrews, J.~H., Briand, L.~C., Labiche, Y., and Namin, A.~S.}
+\newblock Using mutation analysis for assessing and comparing testing coverage
+  criteria.
+\newblock {\em IEEE Transactions on Software Engineering 32}, 8 (2006),
+  608--624.
+
+\bibitem{androutsopoulos2014an}
+{\sc Androutsopoulos, K., Clark, D., Dan, H., Hierons, R.~M., and Harman, M.}
+\newblock An analysis of the relationship between conditional entropy and
+  failed error propagation in software testing.
+\newblock In {\em International Conference on Software Engineering\/} (New
+  York, NY, USA, 2014), ACM, pp.~573--583.
+
+\bibitem{budd1980mutation}
+{\sc Budd, T.~A.}
+\newblock {\em Mutation Analysis of Program Test Data}.
+\newblock PhD thesis, Yale University, New Haven, CT, USA, 1980.
+
+\bibitem{budd1980theoretical}
+{\sc Budd, T.~A., DeMillo, R.~A., Lipton, R.~J., and Sayward, F.~G.}
+\newblock Theoretical and empirical studies on using program mutation to test
+  the functional correctness of programs.
+\newblock In {\em ACM SIGPLAN-SIGACT symposium on Principles of programming
+  languages\/} (1980), ACM, pp.~220--233.
+
+\bibitem{budd1979mutation}
+{\sc Budd, T.~A., Lipton, R.~J., DeMillo, R.~A., and Sayward, F.~G.}
+\newblock {\em Mutation analysis}.
+\newblock Yale University, Department of Computer Science, 1979.
+
+\bibitem{clark2012squeeziness}
+{\sc Clark, D., and Hierons, R.~M.}
+\newblock Squeeziness: An information theoretic measure for avoiding fault
+  masking.
+\newblock {\em Information Processing Letters 112}, 8 (2012), 335--340.
+
+\bibitem{daran1996software}
+{\sc Daran, M., and Th{\'e}venod-Fosse, P.}
+\newblock Software error analysis: A real case study involving real faults and
+  mutations.
+\newblock In {\em ACM SIGSOFT International Symposium on Software Testing and
+  Analysis\/} (1996), ACM, pp.~158--171.
+
+\bibitem{demillo1978hints}
+{\sc DeMillo, R.~A., Lipton, R.~J., and Sayward, F.~G.}
+\newblock Hints on test data selection: Help for the practicing programmer.
+\newblock {\em Computer 11}, 4 (1978), 34--41.
+
+\bibitem{demillo1991on}
+{\sc DeMillo, R.~A., and Mathur, A.~P.}
+\newblock On the use of software artifacts to evaluate the effectiveness of
+  mutation analysis for detecting errors in production software.
+\newblock Tech. Rep. SERC-TR92-P, Software Engineering Research Center, Purdue
+  University, West Lafayette, IN,, 1991.
+
+\bibitem{dias1975fault}
+{\sc Dias, F. J.~O.}
+\newblock Fault masking in combinational logic circuits.
+\newblock {\em IEEE Trans. Comput. 24}, 5 (May 1975), 476--482.
+
+\bibitem{do2006on}
+{\sc Do, H., and Rothermel, G.}
+\newblock On the use of mutation faults in empirical assessments of test case
+  prioritization techniques.
+\newblock {\em IEEE Transactions on Software Engineering 32}, 9 (2006),
+  733--752.
+
+\bibitem{gopinath2014mutations}
+{\sc Gopinath, R., Jensen, C., and Groce, A.}
+\newblock Mutations: How close are they to real faults?
+\newblock In {\em International Symposium on Software Reliability
+  Engineering\/} (Nov 2014), pp.~189--200.
+
+\bibitem{harman2010manifesto}
+{\sc Harman, M., Jia, Y., and Langdon, W.~B.}
+\newblock A manifesto for higher order mutation testing.
+\newblock In {\em International Conference on Software Testing, Verification
+  and Validation Workshops\/} (2010), IEEE, pp.~80--89.
+
+\bibitem{jia2008constructing}
+{\sc Jia, Y., and Harman, M.}
+\newblock Constructing subtle faults using higher order mutation testing.
+\newblock In {\em IEEE International Working Conference on Source Code Analysis
+  and Manipulation\/} (2008), IEEE, pp.~249--258.
+
+\bibitem{jia2009higher}
+{\sc Jia, Y., and Harman, M.}
+\newblock Higher order mutation testing.
+\newblock {\em Information and Software Technology 51}, 10 (Oct. 2009),
+  1379--1393.
+
+\bibitem{jia2011analysis}
+{\sc Jia, Y., and Harman, M.}
+\newblock An analysis and survey of the development of mutation testing.
+\newblock {\em IEEE Transactions on Software Engineering 37}, 5 (2011),
+  649--678.
+
+\bibitem{just2014mutants}
+{\sc Just, R., Jalali, D., Inozemtseva, L., Ernst, M.~D., Holmes, R., and
+  Fraser, G.}
+\newblock Are mutants a valid substitute for real faults in software testing?
+\newblock In {\em ACM SIGSOFT Symposium on The Foundations of Software
+  Engineering\/} (Hong Kong, China, 2014), ACM, pp.~654--665.
+
+\bibitem{kapoor2006formal}
+{\sc Kapoor, K.}
+\newblock Formal analysis of coupling hypothesis for logical faults.
+\newblock {\em Innovations in Systems and Software Engineering 2}, 2 (2006),
+  80--87.
+
+\bibitem{langdon2010efficient}
+{\sc Langdon, W.~B., Harman, M., and Jia, Y.}
+\newblock Efficient multi-objective higher order mutation testing with genetic
+  programming.
+\newblock {\em The Journal of Systems and Software 83}, 12 (2010), 2416--2430.
+
+\bibitem{li2009experimental}
+{\sc Li, N., Praphamontripong, U., and Offutt, J.}
+\newblock An experimental comparison of four unit test criteria: Mutation,
+  edge-pair, all-uses and prime path coverage.
+\newblock In {\em International Conference on Software Testing, Verification
+  and Validation Workshops\/} (2009), IEEE, pp.~220--229.
+
+\bibitem{lipton1971fault}
+{\sc Lipton, R.~J.}
+\newblock Fault diagnosis of computer programs.
+\newblock Tech. rep., Carnegie Mellon Univ., 1971.
+
+\bibitem{lipton1978the}
+{\sc Lipton, R.~J., and Sayward, F.~G.}
+\newblock The status of research on program mutation.
+\newblock In {\em Digest for the Workshop on Software Testing and Test
+  Documentation\/} (December 1978), pp.~355--373.
+
+\bibitem{mathur1994empirical}
+{\sc Mathur, A.~P., and Wong, W.~E.}
+\newblock An empirical comparison of data flow and mutation-based test adequacy
+  criteria.
+\newblock {\em Software Testing, Verification and Reliability 4}, 1 (1994),
+  9--31.
+
+\bibitem{morell1983a}
+{\sc Morell, L.~J.}
+\newblock {\em A Theory of Error-based Testing}.
+\newblock PhD thesis, University of Maryland at College Park, College Park, MD,
+  USA, 1983.
+
+\bibitem{morell1987amodel}
+{\sc Morell, L.~J.}
+\newblock A model for code-based testing schemes.
+\newblock In {\em Fifth Annual Pacific Northwest Software Quality Conf\/}
+  (1987), p.~309.
+
+\bibitem{morell1990atheory}
+{\sc Morell, L.~J.}
+\newblock A theory of fault-based testing.
+\newblock {\em IEEE Transactions on Software Engineering 16}, 8 (1990),
+  844--857.
+
+\bibitem{nguyen2014problems}
+{\sc Nguyen, Q.~V., and Madeyski, L.}
+\newblock Problems of mutation testing and higher order mutation testing.
+\newblock In {\em Advanced Computational Methods for Knowledge Engineering}.
+  Springer, 2014, pp.~157--172.
+
+\bibitem{offutt1989thecoupling}
+{\sc Offutt, A.~J.}
+\newblock {The Coupling Effect : Fact or Fiction?}
+\newblock {\em ACM SIGSOFT Software Engineering Notes 14}, 8 (Nov. 1989),
+  131--140.
+
+\bibitem{offutt1992investigations}
+{\sc Offutt, A.~J.}
+\newblock Investigations of the software testing coupling effect.
+\newblock {\em ACM Transactions on Software Engineering and Methodology 1}, 1
+  (1992), 5--20.
+
+\bibitem{offutt2001mutation}
+{\sc Offutt, A.~J., and Untch, R.~H.}
+\newblock Mutation 2000: Uniting the orthogonal.
+\newblock In {\em Mutation testing for the new century}. Springer, 2001,
+  pp.~34--44.
+
+\bibitem{offutt1996subsumption}
+{\sc Offutt, A.~J., and Voas, J.~M.}
+\newblock Subsumption of condition coverage techniques by mutation testing.
+\newblock Tech. rep., Technical Report ISSE-TR-96-01, Information and Software
+  Systems Engineering, George Mason University, 1996.
+
+\bibitem{siegmund2015views}
+{\sc Siegmund, J., Siegmund, N., and Apel, S.}
+\newblock Views on internal and external validity in empirical software
+  engineering.
+\newblock In {\em International Conference on Software Engineering\/} (2015).
+
+\bibitem{voas1993semantic}
+{\sc Voas, J.~M., and Miller, K.~W.}
+\newblock Semantic metrics for software testability.
+\newblock {\em The Journal of Systems and Software 20}, 3 (1993), 207 -- 216.
+
+\bibitem{wah1995fault}
+{\sc Wah, K. S. H.~T.}
+\newblock Fault coupling in finite bijective functions.
+\newblock {\em Software Testing, Verification and Reliability 5}, 1 (1995),
+  3--47.
+
+\bibitem{wah2000atheoretical}
+{\sc Wah, K. S. H.~T.}
+\newblock A theoretical study of fault coupling.
+\newblock {\em Software Testing, Verification and Reliability 10}, 1 (2000),
+  3--45.
+
+\bibitem{wah2001theoretical}
+{\sc Wah, K. S. H.~T.}
+\newblock Theoretical insights into the coupling effect.
+\newblock In {\em Mutation testing for the new century}, W.~E. Wong, Ed. Kluwer
+  Academic Publishers, Norwell, MA, USA, 2001, pp.~62--70.
+
+\bibitem{wah2003ananalysis}
+{\sc Wah, K. S. H.~T.}
+\newblock An analysis of the coupling effect {I}: single test data.
+\newblock {\em Science of Computer Programming 48}, 2 (2003), 119--161.
+
+\bibitem{woodward2000testability}
+{\sc Woodward, M.~R., and Al-Khanjari, Z.~A.}
+\newblock Testability, fault size and the domain-to-range ratio: An eternal
+  triangle.
+\newblock {\em ACM SIGSOFT Software Engineering Notes 25}, 5 (2000), 168--172.
+
+\end{thebibliography}

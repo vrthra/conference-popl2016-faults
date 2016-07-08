@@ -1,0 +1,539 @@
+\section{Theory of Fault Coupling}
+\label{sec:theory}
+%The theory of coupling was investigated by Wah~\cite{wah2000atheoretical}, who
+%proposed a simplified \emph{q}-function model (consisting of \emph{q} composed
+%functions) for theoretical analysis.
+
+We start with a functional view of programs where programs are constructed by
+composition of different functions (this an assumption that was also adopted by Wah~\cite{wah2003ananalysis}).
+While Wah considered composition of \emph{q} functions, which may have as many
+as \emph{q} faults, we consider only pairs of faulty functions. This is because
+any faulty program with a number of separable faults can be modeled as
+composition of two faulty functions, which may themselves contain complex
+separable faults. Hence, a theoretical evaluation of faulty function pairs is
+sufficient to model higher order faults.
+
+%\greybox{
+We note that our analysis
+is subject to these major assumptions,
+also made by Wah~\cite{wah2000atheoretical}:
+In the initial phase, we assume that we can model programs as mathematical functions. This
+is the biggest assumption that we make, since there can be an infinite number
+of syntactical equivalent alternatives to any given program.
+% To make it tractable, we assume that syntax has a uniform impact on faulty and non-faulty
+% versions, and modeling programs as functions reasonable.
+We assume a finite \finput and \foutput for functions considered, and only total
+functions. We assume that faulty versions of a function have same \finput and
+\foutput as that of the non-faulty version\footnote{
+In practical terms, the (\finput,\foutput) of a function is its type signature.
+It is possible that the \emph{range} (or \emph{image}) of a faulty version may
+differ from the non-faulty version. However, we assume that a valid alternate
+that survives the compiler will
+have same type signature, and hence same \foutput.
+}.
+% Next, we assume a single faulty input out of the entire \emph{domain}. This need
+% not be true in the real world. -- TODO: do we need this assumption?
+Further, we model single parameter functions. We note that any function can be
+regarded as a single parameter function by considering their input as composed
+of a tuple of all the original parameters. That is, we consider a function with
+two inputs -- say $a$ and $b$ as a function taking a tuple: $(a,b)$ as input,
+with size of \emph{domain} given by $dom(a) \times dom(b)$.
+
+A significant difference from the standard \qfunction model of Wah is that,
+while Wah considers how a known number of test inputs (1, 2, 3 and
+higher) some of which can detect some of the component faulty functions (there
+can be as many as $q$ faulty functions), can together detect the composite faulty
+function, we consider the probability of any single test input that can detect a
+fault being masked by the addition of a new fault.
+% Further,
+% Wah derives the expected number of survivors, while we determine the average
+% survival ratio of a fault.
+This allow us to significantly simplify our analysis.
+
+% Finally we assume the separability of fault pairs.
+In order for our theory to be applied, the fault pair needs to be separated out
+such that first function and second function can be clearly demarcated. The
+theory relies on the \foutput of first function being the \finput of the second.
+This means that the influence of first should be limited to the input parameter
+for the second, and the first completely independent of the second (we show
+later how this condition may be relaxed). There are various places where this
+assumption may not hold. Note that the theory \emph{does not} rely on the
+constituent faults being considered to be simple.
+
+A major idea in our analysis is the semantic separability of faults. Two faults
+present in a function are said to be separable \emph{if and only if} the
+smallest possible chunk containing both faults can be decomposed into two
+functions $g$ and $h$ such that each fault is isolated within a single function
+(providing $g_a$ and $h_b$ as faulty functions), the behavior of composition
+$h \circ g$ equals the behavior of the original chunk in terms of input and
+output , and composition $h_b \circ g_a$ equals the behavior of the function
+with both faults. A \emph{chunk} here is any small section of the program that can
+be replaced by an independent function preserving the behavior.
+
+That is, given a function:
+\begin{lstlisting}
+def functionX(x, y, n)
+  for i in (1..n):
+      y = faultyA(x)              (1)
+      if odd(i): x = faultyB(y)   (2)
+      x += 1
+\end{lstlisting}
+The lines (1) and (2) together form a chunk.
+The interaction between the
+faults and their separability is discussed next.
+%}
+
+\subsection{Interaction Between Faults}
+We define two kinds of interaction between faults here: \emph{weak}
+interaction, and \emph{strong} interaction. \emph{Weak}
+interactions occur when faults can be isolated into different
+functions such that the output of the function containing the first fault is
+the input of a function containing the second fault.
+
+That is, given two faults $\hat{a}$ and $\hat{b}$ in a function $f$, which
+can be split into $f_{ab} =  h_{b} \circ g_{a}$, where $g_{a}$ and $h_{b}$
+are faulty functions, the only interaction between $\hat{a}$ and $\hat{b}$ is
+because the fault $\hat{a}$ modifies the input of $h$ (or $h_{b}$) from $g(i_0)$
+to $g_{a}(i_0)$ (where $i_0$ is an input for $f$). That is, the interaction
+can be represented by a modified input value.
+
+\emph{Strong} interactions happen when the interpretation of the second
+fault is affected by the first fault. In this case, we cannot separate them
+out into independent faulty functions.
+% For example, consider the \lcalc expression $\lambda\,x\,y\,.\,x\,y$
+% and a corresponding faulty expression $\lambda\,y\,x\,.\,x\,y$.
+% Here, while there are two faults ($x \rightarrow y, y \rightarrow x$), they
+% cannot be separated into isolated composing functions because the interpretation of the
+% second is dependent on whether the first fault is present or not.
+For a practical example, consider the following function in Python:
+
+\begin{lstlisting}
+  def swap(x,y): x,y=y,x
+\end{lstlisting}
+Say this was mutated into
+\begin{lstlisting}
+  def swap(x,y): x,y=x,y
+\end{lstlisting}
+Clearly, there were two independent lexical changes: $x \rightarrow y$
+and $y \rightarrow x$. However, the
+disassembly of the original program is given by
+\begin{lstlisting}
+>>> dis.dis(swap)
+  1   0 LOAD_FAST       1 (y)
+      3 LOAD_FAST       0 (x)
+      6 ROT_TWO
+      7 STORE_FAST      0 (x)
+     10 STORE_FAST      1 (y)
+     13 LOAD_CONST      0 (None)
+     16 RETURN_VALUE
+\end{lstlisting}
+It can be seen that the changes in Python resulted in intertwined changes,
+and hence cannot be separated out.
+Since the faults cannot be separated out, \emph{strong} interactions produce
+faults that have a different characteristic from the simple faults from which
+they are built, and hence should be considered as independent atomic
+faults\footnote{We note that Wah's analysis~\cite{wah2000atheoretical} assumes
+that all complex faults can be separated, and does not take into consideration
+such strongly interacting faults.}.
+Why should we consider the semantically inseparable faults as independent
+faults? An intuitive argument is to consider two functions that
+implement $id$ (these are not strongly interacting).
+That is, given any value $x$, we have $g(x) = h(x) = x$. If two faults $\hat{a}$, and
+$\hat{b}$ occur as we suggest above in $g$ and $h$, causing inputs $i$ to $g_a$
+and inputs $j$ to $h_b$ to fail, then the faulty inputs for $h_b \circ g_a$ are
+bounded by $i \cup j$, where $i$ represents inputs to $f$ that result in faulty
+outputs due to faults in $g$ and $j$ represents inputs to $f$ resulting in faulty
+outputs due to faults in $h$.
+
+What about fault masking? Any input $i$ that failed for $g_a$ could possibly
+result in an input value that would cause a failure for $h_b$. For any element
+outside of $i$, there is no possibility of two faults acting on it, and hence
+no possibility of fault masking.
+However, if the faults are not semantically separable, one cannot make these
+guarantees, as the faulty inputs may be larger than $i \cup j$ or even
+completely different. In the general case, when the interaction is weak, we
+expect the faulty output for up to $i \cup j$.
+These are represented in Figure~\ref{fig:rep}.
+
+This is simple enough to prove formally. Consider a function $f$ that has \finput $x$. Say
+that it can be represented as $h \circ g$ using two independent functions.
+Replacing $g$ with $g_a$ causes $i \in x$ inputs to result in faults.
+Similarly, replacing $h$ with $h_b$ causes $j \in x$ inputs to $f$ to result in
+faults. Joining together to form $f_{ab}$, we know that any of $i \in x$ has a
+potential to produce a faulty output unless it was masked by $h_b$. Similarly,
+any of $j \in x$ also has the possibility of producing a faulty output.
+Now, consider any element $k$ not in either $i$ or $j$. It will not result in
+a faulty output while passing through $g_a$ because it is not in $i$, further,
+the value $g_a(k) = g(k) = k_1$. We already know that $k_1$ would not result in
+a faulty output from $h_b$ because $k \notin j$. Hence, any element
+$k \notin i \cup j$ will not be affected by faults $\hat{a}$ and $\hat{b}$.
+
+Remember that we can make this assertion only because we can replace $g$ and
+$h$ separately. Suppose it is a strong interaction between $\hat{a}$ and $\hat{b}$.
+In this case, any function could potentially be a replacement for $f$. Hence, any
+element in $x$ may potentially result in a fault when $f_{ab}$ is applied. Indeed,
+we are not the first ones to make this observation. These kinds of interactions
+where the higher order faults have a different behavior (and result in different
+inputs with faulty outputs) than the component
+faults are called de-coupled higher order mutants by Harman et al.~\cite{harman2010manifesto}.
+
+%---
+\begin{comment}
+For example consider the following function, and the test cases:
+\begin{lstlisting}
+  def not3(a):
+ o)  return a != 3
+m1)  return a >  3
+m2)  return a != 2
+m3)  return a >  2
+
+                    m1 m2 m3
+                    --------
+t1) not3(1) = T :   F, T, T
+
+t2) not3(4) = T :   T, F, T
+t3) not3(5) = T :   T, T, T
+\end{lstlisting}
+
+As before, $m1$ and $m2$ are constituent faults of $m3$. The test $t1$ detects
+$m1$, and test $t2$ detects $m2$. But $m3$ is triggered by neither alone, but
+combined to $m3$ it triggers $t3$.
+
+\end{comment}
+%---
+Depending on the syntax and semantics of the language used, there may be
+different language features
+(another common example is the order of arguments to a function)
+that cause faults to be strongly interacting.
+
+\subsection{Analysis}
+%This suggests that,
+Say we have a program $f$, where we
+have two simple faults $\hat{a}$, and $\hat{b}$, which can be
+applied to $f$ to produce two functions $f_a$ and $f_b$ containing one fault
+each, and $f_{ab}$ containing both faults (Figure~\ref{fig:lines}).
+
+Say such a program can be partitioned into two functions $g$ and $h$ such that
+\[
+  f = h \circ g
+\]
+with added restriction that the fault $\hat{a}$ lies in function $g$,
+producing an alternative function $g_a$, and the
+fault $\hat{b}$ lies in function $h$ producing $h_b$, such that the new faulty
+version of $f$ containing both is given by
+\[
+  f_{ab} = h_b \circ g_a
+\]
+We note that the particular kind of fault depends on the syntax and semantics
+of the programming language used, and there can be fault pairs that cannot be
+separated cleanly. As stated previously, we ignore these kinds of fault pairs
+as they are syntax dependent and strongly interacting. Hence, no general
+solution is possible for these faults.
+
+The basic question we are trying to resolve is, given that we can distinguish
+a fault in isolation using a given input, what is the probability that
+another fault would not result in the masking of that fault for the same input?
+
+That is, we are given a test input $i_0$ for $f$, that can distinguish between ($f$, $f_a$).
+%, and ($f$, $f_b$).
+The question is, what is the probability that ($f$, $f_{ab}$) can
+be distinguished by the same input?
+
+Since we know that $f_a$ is
+% , and $f_b$ are
+distinguished from $f$, we know that $g_a(i_0) \neq g(i_0)$. Hence, the function
+$h_b$ will have a different input than $h$. Thus, the question simplifies to:
+given an alternate input for function $h$ (or anything that can be substituted
+in its place), what is the probability that a faulty $h$, with the new input
+$g_a(i_0)$ will result in same output as the old $h$, with the old input
+$g(i_0)$?
+
+Let us assume for simplicity\footnote{
+There are two factors that make this assumption reasonable: first,
+for real world functions, there is almost always a limit on the \finput and
+\foutput whether it be due to the data type used, or due to constraints such
+as the available resources such as memory. Second, as we show later, the size
+of the \foutput is actually inversely proportional to the masking effect,
+which helps our case as the \foutput increases (note that
+\finput will always be larger than \foutput). We also note that the assumption of
+finite \finput was also made by Wah~\cite{wah2000atheoretical}.
+} that functions $g$ and $h$ have fixed \finput
+and a \foutput given by
+\begin{align*}
+g \in G &: \mathbb{L} \rightarrow \mathbb{M} \\
+h \in H &: \mathbb{M} \rightarrow \mathbb{N} \\
+\end{align*}
+That is, $h$ belongs to a set of functions $H$, which has a \finput $M$, and a
+\foutput $N$ such that $m = |M|$ and $n = |N|$. Considering all possible functions
+in $H$, with the given \finput and \foutput, there will be $n^m$ unique functions
+in $H$ (separated by at least one different $\{input,output\}$ pair).
+
+The only constraint on $h_b$ we have is that $h_b(g_a(i_0))$ should result in
+the exact same output as $h(g(i_0))$. That is, for some particular input for
+$h_b$, the output is fixed at a particular output. We are looking for
+functions that can vary in every other $\{input,output\}$ pair except for the
+pair given by $\{g_a(i_0), h(g(i_0)\})$. There are $n^{m-1}$ functions that
+can do that out of $|H| = n^m$ functions. That is, the \kappaT is
+given by
+\[
+  \kappa = 1 - \frac{n^{m-1}}{n^m}
+\]
+This is simplified to $ 1 - \frac{1}{n}$ of the total number of eligible functions
+where $m$ is the size of \finput, and $n$ is the size of \foutput of the function. 
+That is, given any test input, the probability of the \couplingC effect where
+the fault in one constituent is not masked by the fault in another is $1 - \frac{1}{n}$,
+and $\frac{1}{n}$ tends to be very small when the \foutput of the function ($n$) is
+large.
+
+A symmetric argument can be made when the function fixed is $h$, and $g$
+varies. There are $m^l$ functions in $G$, of which $m^{l-1}$ can be used as
+a replacement without affecting $\{input, output\}$, in which case, the
+probability of composite coupling effect is $1 - \frac{1}{m}$
+where $m$ is the \foutput
+\footnote{We note that the logic of probability is very similar to
+Wah~\cite{wah2000atheoretical}, and this is the same value derived by Wah
+for single test input, where $n$ is the \finput of the function as Wah
+does not consider functions that have a different \finput and \foutput.}.
+
+For example, in the case of a function with its \finput and \foutput restricted to
+boolean, with \finput $2$ and \foutput $2$, the probability of \couplingC effect
+is $1 - \frac{1}{2} = 0.5$, and in the
+case of an octet ($8$ bits), the probability of \couplingC effect
+is $0.9961$ (given equal probability for all faults).
+
+This is easy to verify in the case of booleans: There are $2^2$ possible unique
+boolean functions. $f_{id}$ is just the identity function, and $f_{not}$ is the $not$
+function. $f_{true}$ always returns $true$, and $f_{false}$ always returns
+$false$. Consider a combination of functions such as $f = f_{id} \circ f_{not}$.
+We consider a test input $true$, which will be converted to $false$ by
+function $f$. Say there is an error in $f_{id}$, and we mistakenly used
+$f_{false}$ instead (note that we would not be able to use $f_{true}$ since we
+assume that the original input would have detected the error if it was taken
+individually). The question is, how many ways can you make a faulty
+$f_{not}$ such that we get $false$? That is, which functions map $false$ to $false$?
+There are just two -- $f_{id}$, and $f_{false}$ which is 50\% of the available
+functions.
+
+<<cubes, child='fig.cubes.Rnw'>>=
+@
+\subsection{Recursion and Iteration}
+<<recursion, child='fig.recursion.Rnw'>>=
+@
+
+A common feature of general purpose languages is \emph{recursion} and
+\emph{iteration}. These present challenges to our analysis. For example,
+consider the loop below.
+
+\begin{lstlisting}
+  while y > 0: y = h(g(y)
+\end{lstlisting}
+
+Here, the two functions $g$ and $h$ are otherwise independent. However, the
+input of $h$ influences $g$, and vice versa. Here, we do not know when the
+loop will end, and any faults will be detected. The faults may be detected
+after a larger or smaller number of iterations than the non faulty version
+of the program. Hence, what we can do, is to consider the chances of
+propagation of the faulty value after each iteration. That is, if a faulty
+value is present after executing the function $g_a$ once, what are the
+chances that it will be caught at the end of each iteration?
+
+Let us use $f$ to denote the program segment composed of $g$ and $h$, as before.
+After the first iteration of $f$, we will have $\frac{1}{n}$ possibility
+for fault masking as we discussed before, and $\frac{n-1}{n}$ possibility
+for detectable faulty values. Now, consider the next iteration. In this case,
+of the original $\frac{1}{n}$ masked outputs, $\frac{1}{n}$ will again be
+masked, for a total of $\frac{1}{n^2}$, and the remaining $\frac{(n-1)}{n^2}$
+will have a value that is faulty. Consider the original $\frac{n-1}{n}$ that
+had faulty values in the first iteration. Out of that, $\frac{1}{n}$ will
+be masked in the second iteration (i.e. $\frac{n-1}{n^2}$). Similarly,
+$\frac{(n-1)^2}{n^2}$ of the original faulty outputs will remain faulty.
+That is, after second iteration, we will have $\frac{1}{n^2} + \frac{n-1}{n^2} = \frac{1}{n}$
+masked output values. Similarly, we will have $\frac{n-1}{n^2} + \frac{(n-1)^2}{n^2} = \frac{1-n}{n}$
+faulty output values. That is, after each iteration, we will have $\frac{1}{n}$
+possibility of fault masking (See Figure~\ref{fig:recursion}). Hence, \faultT will hold even for recursion and
+iteration.
+
+A question may be asked, what happens for functions where the iteration may
+proceed in different paths during different executions. For example:
+
+\begin{lstlisting}
+  for i in 1..10:
+    if odd(i): x = g(y)
+    else: y = h(x)
+\end{lstlisting}
+
+In programs such as this, one may unroll the loop, i.e.
+\begin{lstlisting}
+  for i in 1..10:2:
+      x = g(y)
+      y = h(x)
+\end{lstlisting}
+which can make it amenable to the above treatment. Recursion can also be
+treated in a same fashion. We do not claim that this is exhaustive. There could
+exist other patterns of recursion or iteration that do not fit this template.
+However, most common patterns of recursion and iteration could be captured in
+this pattern.
+
+Can we extend the bounds we found ($i \cup j$ for faulty outputs) to recursion?
+Unfortunately, it is possible for a faulty function to interact with its own
+output during recursion, and hence mask a failure. Hence, we can not bound the
+failure causing inputs in a doubly faulty function that incorporates recursion.
+
+\subsection{Accounting for Multiple Faults}
+What happens when there are multiple faults? Say, we have a system modeled by
+$p \circ q \circ r \circ s \circ t \circ u$, where any of the functions may be
+faulty or not faulty, for example
+$p_a \circ q \circ r_b \circ s_c \circ t_d \circ u$. We can not directly apply
+the technique in recursion because there are non-faulty functions interspersed.
+The thing to remember here is that a non faulty function immediately adjacent to
+a faulty function can together be considered a faulty function. Hence, the above
+reduces to $(p_a \circ q) \circ r_b \circ s_c \circ (t_d \circ u)$, or equivalently
+$pq_a \circ r_b \circ s_c \circ tu_d$. This is now
+amenable to the treatment in Figure~\ref{fig:recursion} because each function
+now can produce $\frac{1}{n}$ non-faulty and $\frac{n-1}{n}$ faulty outputs. An
+additional complication is that a general expression is not possible unless we
+simplify further, and assumes that \finput and \foutput of all functions are same. 
+With this simplification, even when we consider a number of faulty functions,
+the mean ratio of fault masking remains the same at $\frac{1}{n}$.
+
+Indeed, we note that this is one of the significant differences from Wah's
+analysis. Wah does not attempt to collapse the non-faulty functions to their
+neighbours. Why do we do this? Because we know that each faulty function on
+their own was detected by the test suite. That is, we know that
+$p \circ q_a \circ r \circ s \circ t \circ u$ would have been detected.
+Hence, we can certainly consider $pq_a \circ r \circ s \circ t \circ u$ as
+the set of functions where the function $pq_a$ is the faulty function with
+an atomic fault.
+
+\subsection{Dynamically Checked Languages}
+
+How can we apply the composite coupling hypothesis to \emph{dynamically checked}
+languages, or \emph{unityped} languages? In both cases, any single function can
+be taken to have the exact same \finput and \finput, the size of which may be
+taken to be extremely large (but finite due to constraints of the environment).
+Intuitively, this is because any function may be replaced by any other, and
+one may not identify a faulty input type until execution passes through that
+function. Hence in such languages, we can expect the \kappaT to be large.
+
+\subsection{Impact of Syntax}
+<<lines, child='fig.lines.Rnw'>>=
+@
+
+In order to model \couplingC, we relied on a simplification ---
+that all faults are equally probable. However, in the real world this is often not
+the case, with faults that are closer syntactically being more probable than
+faults which are not in the syntactic neighborhood of correctness.
+In fact, we have some
+reasonable estimate of the distribution of size of faults that programmers
+make~\cite{gopinath2014mutations}.
+
+Implementation of functions as code
+need not necessarily follow the same distribution as that of their mathematical
+counterparts. For example, for mathematical functions, there exist only 4
+functions that map from a boolean to a boolean. However, there can be an
+infinite number of program implementations of that function.
+The way it can be made tractable is again to consider the human element.
+The \emph{competent programmer hypothesis} suggests that faulty programs are
+close (syntactically) to the correct versions. So one need only consider a
+limited number of alternatives (the number of which is a function of the size
+of the correct version, if one assumes that each token may be legally replaced
+by another).
+% One could extend it to suggest
+% that a human programmer would also tend to prefer small programs that can
+% implement a given functionality, and this assumption can help make the number
+% of alternatives we consider tractable (the number of such alternatives then
+% becomes a (possibly exponential) function of the smallest program size).
+
+As soon as we speak about syntactic neighborhood,
+the syntax of a language can have a large influence on which faults can be considered to be in a
+neighborhood. However, we note that most languages seem to follow a similar
+distribution of faults with a size below 10 tokens for 90\% of faults~\cite{gopinath2014mutations}.
+
+Let us call the original input
+to $h$, $g(i_0) = j_0$, and the changed value $g_a(i_0) = j_a$.
+Similarly, let $f(i_0) = k_0$, $f_a(i_0) = k_a$, $f_b(i_0) = k_b$,
+and $f_{ab}(i_0) = k_{ab}$. Given two inputs $i_0$, and $i_1$ for
+a function $f$, we call $i_0$, and $i_1$ \emph{semantically close} if
+their execution paths in $f$ follow equivalent profiles, e.g., taking the same
+branches of conditionals. We call $i_0$ and $i_1$ \emph{semantically far}
+in terms of $f$ if their execution profile is different.
+
+Consider the possibility of masking the output of $h_b$ by $g_a$
+($g_{a'}$ in Figure~\ref{fig:lines}). We already
+know that $h(j_a) = k_b$ was detected. That is, we know that
+$j_a$ was sufficiently different from $j_0$, that it propagated through $h(j_a)$ to be caught by a test case. Say $j_a$ was \emph{semantically far}
+from $j_0$, and the difference in code path contained the fault $\hat{a}$.
+In that case, the fault $\hat{a}$ would not have been executed, and
+since $k_{ab} = k_b$, it will always be detected.
+
+On the other hand, say $j_a$ was \emph{semantically close} to $j_0$ in terms of
+$g$ and the fault $\hat{a}$ was executed. There are again three possibilities.
+The first is that $\hat{a}$ had no impact, in which case the analysis
+is the same as before. The second is that $\hat{a}$ caused a change in the output.
+It is possible that execution of $\hat{a}$ could be problematic enough to always
+cause an error, in which case we have $k_{ab} = k_a$, and detection.
+Thus masking requires $k_{ab}$ to be equal to $k_0$.
+
+Even if we assume that the function $h_b$ is close syntactically to $h$, and
+that this implies semantic closeness of functions $h$ and $h_b$, we expect
+the value $k_{ab}$ to be near $k_b$, not $k_0$.
+This suggests that masking, even when considered in the light of
+syntactical neighborhood, is still unlikely, but this belief requires
+empirical verification since we are unable to assign probabilities to
+the cases above.  Our empirical data (provided in the next section of
+this paper) should shed light on the actual incidence of masking when
+syntactic/semantic neighborhoods are taken into account, since real
+faults are likely in the syntactic and semantic neighborhood of the
+correct code.
+
+A statistical observation can further buttress our argument. We know that
+if all functions were equally probable, fault masking has low probability.
+Now, consider the functions that are syntactically close to a given function.
+For most input values, we can assume that the syntactically close functions
+will have same output as that of the given function, more so than functions
+that are far away lexically. If $h$ did not mask a value originally, (which
+we know since we were able to detect fault $h(g_a(i_0))$), then the
+syntactically close functions to $h$ will with a higher probability than a
+uniform sample, produce the same value as $h(g_a(i_0))$, which will be detected
+as faulty.
+
+
+\subsection{Can Strong Interaction be Avoided?}
+
+Remember that the argument of mutation analysis is that if a test suite can find
+all atomic faults, then by \faultT, a large percentage ($\kappa$) of
+complex faults will also be found by the same test suite. A problem with this
+is that one can in general never be sure that all atomic faults have been found,
+as any fault interaction has the potential to produce an atomic fault through
+strong interaction.
+Hence, it is interesting to ask, what features in a programming language
+contribute to strong fault interaction, and is there a representation of
+programs where strong fault interaction is guaranteed to be absent.
+
+The first question is, given that the strong interaction is dependent on the
+execution, can runtime environment or compiler order computation so that strong
+interaction is no longer present?
+
+Consider the function \emph{swap (a,b) = (b,a)} that we examined earlier. We
+see how one may mistakenly use \emph{id (a,b) = (a,b)} instead, and cause a
+strong interaction. Now, the question is, does there exist a way to split the
+two functions, so that the condition of separability can be satisfied?
+Given that there are only four possible functions that can operate on a tuple,
+(\emph{swap (a,b) = (b,a)}, \emph{id (a,b) = (a,b)}, \emph{dupleft (a,b) = (a,a)}, \emph{dupright (a,b) = (b,b)})
+we could check it exhaustively. The condition is that the functions representing
+single faults should individually cause a detectable deviation on their own, and
+on composition, result in same behavior as \emph{id}. Now, it can be seen that,
+neither of the single fault functions can behave like $swap$ since that
+represents \emph{no} fault, so they can not behave like $id$, since that suggests that
+the other faulty function behaves like $swap$. Hence, no compiler or runtime
+environment can remove the strong interaction in \emph{swap}.
+
+The next question is, where can we expect strong interaction to appear?
+While we can not provide an exhaustive overview of possible language features,
+we can demonstrate that even very simple languages such as the \lcalc are vulnerable
+to strong interaction. For example, consider the \lcalc expression $\lambda x\,y\,. y\,x$,
+and its faulty version $\lambda x\,y\,. x\,y$. There are two lexical points where
+the faults have been injected $\{x \rightarrow y, y \rightarrow x\} $. However,
+they cannot be separated out. That is, even simple features such as variables
+can cause strong interaction.
+

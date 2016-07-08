@@ -1,0 +1,2014 @@
+\documentclass[preprint,nonatbib]{sigplanconf}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\usepackage{Sweavel}
+
+
+\input{meta}
+\newcommand*\per{\scalebox{.5}{\%}}
+
+
+
+\begin{document}
+\special{papersize=8.5in,11in}
+\setlength{\pdfpageheight}{\paperheight}
+\setlength{\pdfpagewidth}{\paperwidth}
+
+\conferenceinfo{CONF 'yy}{Month d--d, 20yy, City, ST, Country}
+\copyrightyear{2017}
+\copyrightdata{978-1-nnnn-nnnn-n/yy/mm}
+\copyrightdoi{nnnnnnn.nnnnnnn}
+
+\input{header}
+\maketitle
+
+\begin{abstract}
+
+Fault masking is an important problem in software testing, where the
+effect of one fault serves to mask that of another fault for particular
+test inputs.
+The \emph{coupling effect} is relied upon by testing practitioners to
+ensure that fault masking is rare.
+It states that \emph{\oHypothesis}.
+
+While this effect has been empirically evaluated, our theoretical
+understanding of \emph{the coupling effect} is as yet incomplete.
+Wah proposed a theory of the coupling effect on finite bijective (or near bijective)
+functions with the same \finput and \foutput, and assuming uniform distribution
+for candidate functions. This model however, was criticized as being too
+simple to model real systems, as it did not account for differing \finput and
+\foutput in real programs,
+% the impact of recursion and iteration,
+or for syntactic neighborhood (it assumed all faults equally likely).
+
+We propose a new theory of fault coupling that is applicable in the realm of
+general functions (with certain constraints). We show that there are two kinds
+of fault interactions, of which only the weak interaction can be modeled by
+the theory of the coupling effect. The strong interaction can produce faults that
+are semantically different from the original faults. These faults should
+hence be considered as independent atomic faults.
+Our analysis show that the theory
+holds even when the effect of syntactical neighborhood of the program is
+considered.
+
+We also propose a modified hypothesis that is stronger than the traditional
+definition --- the \emph{\faultT}:
+
+\textit{\cHypothesis}
+
+We analyze numerous real-world programs with real faults to validate
+and empirically approximate the \emph{composite coupling ratio} $\kappa$.
+We find that $\kappa$ is approximately $99\%$ with
+95\% confidence, and very close to the general coupling ratio $C$
+which was also found to be greater than $99\%$ with 95\% confidence.
+
+\end{abstract}
+
+\category{D}{2}{4}
+
+\begin{comment}
+\begin{CCSXML}
+  <ccs2012>
+  <concept>
+  <concept_id>10011007.10011074.10011099.10011693</concept_id>
+  <concept_desc>Software and its engineering~Empirical software validation</concept_desc>
+  <concept_significance>500</concept_significance>
+  </concept>
+  </ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Software and its engineering~Empirical software validation}
+\end{comment}
+
+% general terms are not compulsory anymore,
+% you may leave them out
+\terms
+faults, coupling
+
+\keywords
+test frameworks, evaluation of coverage, coverage criteria, statistical analysis
+
+
+% 10 (include figures and appendices but not reference) + 1 (references)
+% we investigate another dimension vis patterns.
+\begin{comment}
+
+\end{comment}
+
+
+\setlength\tabcolsep{2pt}
+
+
+% 10 pages for the main text
+
+\section{Introduction}
+
+\emph{Fault masking} occurs when interactions between component faults in
+a complex fault result in expected (non-faulty) value being produced for
+particular test inputs. This can result in faults being missed by test cases,
+even though the complex fault may produce faulty outputs for other values, hence
+negatively impacting the testability of a software system.
+It can also result in undeserved overconfidence in the reliability of a software
+system.
+%Fault masking also negatively impacts the testability of a software
+%system, making bugs hard to find.
+
+The \emph{coupling effect}~\cite{demillo1978hints} hypothesis studies the
+semiotics\footnote{The relation between syntax and semantics of faults.} of fault masking. It asserts that
+\emph{``complex faults are coupled to simple faults in such a way that a test
+data set that detects \textbf{all simple faults in a program} will detect a
+high percentage of the complex faults.''}~\cite{offutt1992investigations,offutt1989thecoupling, jia2011analysis}.
+
+This is relied upon by software testers to assert that fault masking is indeed
+rare. Further, Mutation analysis~\cite{lipton1971fault,budd1979mutation}, the
+premier technique for evaluating test suite quality relies on the \emph{coupling
+effect} to assert that detecting simple faults is sufficient to guarantee the
+quality of a test suite against more complex faults.
+
+However, our understanding of the \emph{coupling effect} is woefully
+inadequate. We do not know when, and how often fault coupling can happen,
+whether multiple faults will always result in fault coupling, and the effect of
+increase in number of faults in the number of faults masked.
+
+Further, the formal statement of coupling effect itself is ambiguous and
+inadequate as it covers only the case where all simple faults have been found.
+Even worse, it has no unambiguous definition of what a simple (or atomic) fault
+is. We propose a stronger version of the \emph{coupling effect}
+(called the \efaultT to avoid confusion):
+
+\textit{
+  \cHypothesis
+}
+
+% With a corresponding change in mutation analysis to exhaustively generate all
+% atomic faults (rather than simple faults), \efaultT can be used in an inductive
+% argument to assert the validity of mutation analysis.
+
+We investigate our hypothesis both theoretically and empirically. We describe
+how faults interact, categorize fault interaction to weak and strong
+interaction, and provide an unambiguous description of atomic faults. We further
+validate our findings using real faults from numerous software systems.
+The terms used in this paper are given in Note~\ref{box:terms}.
+
+
+\begin{infobox}
+\noindent\emph{(Semantic) Separability of faults}: Two faults present in a function are said to be separable \emph{if and only if} the smallest possible chunk containing both faults can be decomposed into two functions $g$ and $h$ such that each fault is isolated within a single function (providing $g_a$ and $h_b$ as faulty functions), the behavior of composition $h \circ g$ equals the behavior of the original chunk in terms of input and output , and composition $h_b \circ g_a$ equals the behavior of the chunk with both faults. \\
+\noindent\emph{Simple fault}: A fault that cannot be \emph{lexically} separated into other independent smaller faults. Also called a \emph{first order} fault. \\
+\noindent\emph{Complex fault}: A fault that can be \emph{lexically} separated into independent smaller faults. Also called a \emph{higher order} fault, or a \emph{combined fault}. \\
+\noindent\emph{Constituent fault}: A fault that is \emph{lexically} contained in another fault.\\
+\noindent\emph{Atomic fault}: A fault that cannot be \emph{semantically} separated into other independent smaller faults.\\
+\noindent\emph{Composite fault}: A fault that can be \emph{semantically} separated into independent smaller faults. \\
+\noindent\emph{Traditional coupling ratio ($C$)}: The ratio between the percentage of complex faults detected and the percentage of simple faults that were detected by a test suite.\\
+\noindent\emph{\KappaT ($\kappa$)}: The ratio between the percentage of complex faults detected by the same set of test cases that detected the constituent simple faults, and the percentage of constituent simple faults detected.\\
+% DONE: clarify what happens when the \finput of the mutant is different, or add it to assumptions
+% WONTFIX: e.g. for a constant program that does not take input.
+\noindent\emph{\fInput of a function}: The \finput of a function is the set of all values a function can take as inputs (this is practically the input type of a function).\\
+% DONE: clarify what happens when the \foutput of the mutant is different, or add it to assumptions
+% DONE: e.g when multiple elements in \finput maps to the same \foutput (use co-domain rather than range/image)
+\noindent\emph{\fOutput of a function}: The \foutput of a function is the set of all values that a function can produce when it is provided with a valid input from its \finput (this is practically the output type of a function).\\
+\noindent\emph{Range of a function}: The \emph{range} of a function is the set of all values in \foutput that directly maps to a value in the \finput.\\
+\noindent\emph{Finite \finput and \foutput}: We assume that the set of possible input values, and the set of output values corresponding to them, are finite.\\
+%TODO: explain dynamic languages: They have an almost infinite domain and co-domain.
+\noindent\emph{Total functions}: Functions where an output is defined for all elements in its \finput.\\
+\noindent\emph{Syntactic neighborhood}: The set of functions that can be reached from a given function by modifying its \emph{syntactical representation in a given language} a given number of times.\\
+\noindent\emph{Degenerate function}: A function which is not \emph{bijective} from \emph{domain} to \emph{range}. If $n$ values in \emph{domain} maps to duplicate values in \emph{range}, it is called an $n$-degenerate function.
+\caption{Terms used in this paper}
+\label{box:terms}
+\end{infobox}
+\subsection{Theory}
+
+Theoretical aspects of the coupling effect
+%  for logical faults was investigated by Kapoor~\cite{kapoor2006formal}, and
+on functions was investigated by Wah et al.~\cite{wah1995fault,wah2000atheoretical,wah2003ananalysis}. Wah
+assumes that any software is built by composition of \emph{q} independent functions, with
+a few restrictions. This model is called the standard \qfunction model.
+The \qfunctions have the following restrictions:
+\begin{itemize}
+  \item Functions have same \finput and \emph{range} (order \emph{n}) so that any two
+    functions can be composed together, and the functions are \emph{bijective} (one-to-one).
+    The non-\emph{bijective} functions are modeled as \emph{degenerate} functions which
+    are close to \emph{bijective}, but with a few duplicate inputs that map to
+    same location in image.
+  \item A program with two faults can be split into two programs, with one program
+    containing one fault, and the other program the other\footnote{
+      This was assumed by Wah to be true for general functions. However, we
+      show in Section~\ref{sec:theory} that it is not applicable to
+      all functions.
+    }.
+  \item All applicable functions have equal probability of being chosen as a faulty
+       representation of another (ignoring the
+       syntactical neighborhood of a function) -- the \emph{democratic assumption}.
+  \item The number of functions considered \emph{q} is much smaller than the size of the domain. That is, $q \ll n$.
+     Wah suggests that as $q$ nears $n$, the coupling effect weakens.
+\end{itemize}
+Wah showed that for \emph{q} functions, the survival ratio of first and second
+order test sets are $\frac{1}{n}$ and $\frac{1}{n^2}$ respectively,  where $n$ is
+the order of the \finput. %~\cite{jia2011analysis}.
+Further, Wah finds a general observation, and a heuristic, that the survival
+ratio of a multi-fault alternate is $\frac{p+1}{n}$ if there are $p$ fault free
+functions at the end after a faulty function. This allows Wah to solve the
+\qfunction model since there are $2^{p-1}-1$ multi fault alternates with last
+faulty function at $p$. Hence, the expected number of survivors for a \qfunction
+composition is given by:
+\[
+  \frac{1}{n^r} \sum_{p=1}^{q} (2^{p-1} -1) (q - p + 1)^r
+\]
+for test sets of order $r$, \qfunctions, and $n$ the order of the domain.
+
+Wah's analysis, however, lacks wider applicability due to the constraints
+placed on functions. Functions in typical programs vary widely in their \finput
+and \foutput. Second, the assumption that distribution of mathematical functions
+can represent the distribution of programs with same \finput and \foutput
+is rather strong because there can be an infinite number of alternative programs
+that represent the same mathematical function.
+Third, the assumption that all applicable functions are equally
+probable as faulty representation of a function ignores the
+impact of syntactical neighborhood, because functions that are in the
+syntactical neighborhood (those functions that can be reached by a small
+modification of the original function) are more probable as faulty replacements
+than others further away. That is, it is possible that a \emph{quick sort}
+implementation can have a small bug, resulting in an incorrect sort. However,
+it is quite improbable that it is replaced by an algorithm for --- say ---
+\emph{random shuffle}, which has
+the same \finput and \foutput as that of a sorting function.  While
+syntactical nearness does not completely capture semantic nearness, it
+is closer than assuming any function is a plausible fault for any
+other function.  Next, Wah assumed that all complex faults can be semantically
+separated to component faults with the component faults appearing in independent
+functions. However, as we show in
+Section~\ref{sec:theory}, this assumption is valid only in certain cases.
+Further, Wah's analysis does not account for recursion and iteration. If one
+assumes that different functions in the \qfunction model may be considered as
+different steps in an iteration, it falls short due to the specification that
+$q$ be much less than the domain of the function considered (at which point,
+Wah suggests that the approximations no longer hold true).
+Finally, Wah's analysis suggested that
+the survival ratio of mutants is dependent on the \emph{domain} of the
+function. However, this result was due to the assumption that both \emph{domain}
+and \emph{range} of the functions examined were similar. We show that the
+survival ratio of a mutant is actually dependent on the \foutput of the function
+examined, when \finput and \foutput are different (we note that the size of \foutput is
+bounded by the size of \finput of the function).
+
+We propose a simpler theory of fault coupling that uses a similar model as that
+of Wah, but with relaxed constraints. Our
+analysis incorporates functions with differing \finput and \foutput. We clarify
+the semantic separability of complex faults, and show how it affects the
+coupling effect.
+More importantly, we show that certain common classes of complex faults may not
+semantically separable.
+This provides us with a definition of an \emph{atomic fault}, as a fault that
+cannot be semantically separated into simpler faults. This is important because
+two faults that may be lexically separate but inseparable can be expected to
+produce a different faulty behavior than either fault considered independently.
+Further, we consider the impact of syntactic neighborhood. Using both case
+analysis and statistical argument, we show that our
+analysis remains valid even when the syntactic neighborhood is considered.
+
+\subsection{Empirical Validation}
+
+The first empirical study of the coupling effect was conducted by Lipton et al.~\cite{lipton1978the,demillo1978hints}.
+They used a sample of $22,000$ mutants for the program \emph{find} up to the fourth order, and
+observed that test cases for first order mutants were adequate for samples up
+to fourth order.  More empirical evidence for the coupling effect was supplied by
+Offutt~\cite{offutt1992investigations,offutt1989thecoupling} using two more
+programs, \emph{mid} and \emph{tryp}, who observed that the tests for first
+order mutants were sufficient to kill up to 99\% of all $2^{nd}$ order mutants, and
+99\% of $3^{rd}$ order mutants sampled.
+
+The validity of mutation analysis itself --- that mutations are coupled to
+real faults --- has been demonstrated many times in the past.
+DeMillo et al.~\cite{demillo1991on} showed that \TeX{} errors could be coupled to
+simple mutants, and Daran et al.~\cite{daran1996software} found that 85\% of
+error traces produced by mutants were similar to those produced by real faults.
+Andrews et al.~\cite{andrews2005mutation,andrews2006using},
+found that faults generated by mutation analysis are similar in detectability
+to real world faults (in contrast to hand seeded
+faults). Do et al.~\cite{do2006on} showed that using mutation faults for test
+prioritization result in higher detection rates than using hand seeded faults.
+Comparing four adequacy
+criteria --- mutation, edge pair, all uses, and prime path ---
+Li et al.~\cite{li2009experimental} showed that
+mutation adequate testing could detect hand seeded faults better (85\%)
+than other criteria (65\%).
+Finally, Just et al.~\cite{just2014mutants} empirically showed that the
+effectiveness of a test suite in detecting mutants mirrors its ability to
+detect real faults, and the faults introduced by mutation were coupled to 73\%
+of real faults.
+
+We note that, as Offutt suggests~\cite{offutt1992investigations,offutt1989thecoupling},
+there are two distinct definitions of coupling involved. The
+\emph{general coupling effect} suggests that simple faults are coupled to more
+complex faults such that test data adequate for simple faults will be able to
+kill a majority of more complex faults. The \emph{mutation coupling effect}
+states that test data adequate for simple first order mutants will be able to
+detect a majority of more complex mutants. While the \emph{mutation
+coupling effect} has been demonstrated, the \emph{general coupling
+effect} has not been empirically validated yet.
+
+Our empirical analysis aims to accomplish the following goals: First, we
+empirically evaluate the value of the \couplingC ratio $\kappa$ for numerous real-world projects.
+This gives us confidence in the assumptions made in the theoretical analysis,
+and serves to validate the \efaultT. Second, we empirically
+evaluate the general coupling effect for faults, and compute the traditional coupling ratio $C$.
+
+What is the relation between the \couplingC ratio $\kappa$ and the traditional coupling ratio $C$?
+We can regard the \kappaT as a lower limit of the traditional
+coupling ratio. As we explain further, the general coupling ratio does not
+discount the effect of strong fault interactions, which can produce
+complex faults semantically independent from the constituent faults.
+% That is, the combined faults are sometimes detected by test cases other
+% than the original test cases that detected the constituent
+% faults.
+Hence, $C$ is not bounded by any number, and will often be larger than
+$\kappa$, which will be strictly less than one.
+\\
+
+\noindent\textbf{Contributions:}
+%The contributions of this paper are:
+\begin{itemize}
+\item We identify the vagueness of formal statement of the \emph{coupling effect} in
+dealing with non-adequate mutation scores,
+ and propose the \efaultT to resolve this inadequacy.
+\item Our theoretical analysis results in the \efaultT for
+  general functions. We find the \couplingC ratio to be $1-\frac{1}{n}$,
+  where $n$ is the \foutput of function considered.
+\item We show that our analysis remains valid even when considering recursion
+  and loops --- common features in programming.
+\item We provide empirical validation for the \efaultT, and compute the
+  \couplingC ratio $\kappa$ to be greater than $0.99$, with $95\%$ confidence using 25 projects.
+  This helps substantiate the impact of \couplingC.
+\item We provide the first empirical validation of the \emph{general coupling
+  effect}, which states that simple faults and more complex faults are
+coupled.
+\end{itemize}
+
+\begin{comment}
+The \efaultT also has an immediate application. We
+have shown previously~\cite{gopinath2015howhard} how sampling can be used to
+determine to any required precision whether a given mutant is equivalent or
+not. However, the suggested method of evaluating each possibly equivalent
+mutant for the full input \finput is still computationally expensive. We suggest
+that all possible equivalent mutants for a particular function be combined into
+a complex mutant, and evaluated on the input \finput first. If it passes all
+given tests, we take all the individual mutations to be equivalent\footnote{It is
+possible that they are not. However, the variants~\cite{gopinath2016measuring} produced are likely to
+be very similar --- it is a compromise between accuracy and speed.}. If it
+fails, split the changes equally to two parts, and recurse. Any time a set of
+mutations do not fail for the given test data, the constituent mutations can be
+eliminated as possibly equivalent. If a complex mutant is detected, we recurse on its
+two halves until we reach the leaves. Since this is a binary tree, the worst
+performance may happen when there are at least 50\% non-equivalent mutants,
+where we may have to evaluate up to $2\times n$ mutants where $n$ is the total number
+of mutants we need to check for equivalence.
+
+Note that we only sample the higher order faults for validation. However, as
+we showed previously~\cite{gopinath2015howhard}, sampling is a reasonable
+approach as far as mutation analysis is concerned.
+\end{comment}
+
+Our full data set is available for replication\footnote{
+  blinded for review.
+%\url{http://eecs.osuosl.org/rahul/fse2016/}
+}.
+% 1. Describe the problem
+% 2. State your contributions
+
+
+\section{Related Work}
+\label{sec:related}
+
+Fault masking in digital circuits was studied before it was studied in
+software. Dias~\cite{dias1975fault} studies the problem of fault masking, and
+derives an algebraic expression that details the number of faults to be
+considered for detection of all multiple faults.
+
+Coupling effect was first studied under the aegis of \emph{mutation analysis}.
+Hence we review the general mutation analysis research first.
+The idea of mutation analysis was first proposed by 
+Lipton~\cite{lipton1971fault}, and its main concepts were formalized by
+DeMillo et al. in the ``Hints''~\cite{demillo1978hints} paper. The first
+implementation of mutation analysis was provided in the PhD thesis of
+Budd~\cite{budd1980theoretical} in 1980.
+Previous research in mutation
+analysis~\cite{budd1980mutation,mathur1994empirical,offutt1996subsumption}
+suggests that it subsumes different coverage measures, including
+\textit{statement}, \textit{branch}, and \textit{all-defs} dataflow
+coverage~\cite{budd1980mutation,mathur1994empirical,offutt1996subsumption}.
+There is also some evidence that the faults produced
+by mutation analysis are similar to real faults in terms of
+error trace produced~\cite{daran1996software} and the ease of
+detection~\cite{andrews2005mutation,andrews2006using}.  Recent research by
+Just et al.~\cite{just2014mutants} using 357 real bugs suggests that the
+mutation score increases with test effectiveness for 75\% of the cases,
+which was better than the 46\% reported for structural coverage.
+
+The validity of mutation analysis rests upon two fundamental assumptions:
+\emph{the competent programmer hypothesis} --- which states that programmers tend
+to make simple mistakes, and the \emph{coupling effect} --- which states that test
+cases capable of detecting faults in isolation continue to be effective even
+when faults appear in combination with other faults~\cite{demillo1978hints}.
+The coupling effect was first validated by Lipton et
+al.~\cite{lipton1978the,demillo1978hints} up to fourth order by sampling.
+Offutt~\cite{offutt1989thecoupling,offutt1992investigations} investigated second
+order exhaustively, and sampled until $3^{rd}$ order mutants.
+Langdon et al.~\cite{langdon2010efficient} using 85 first order mutants of
+\emph{triangle} program and $16,383$ tests observed that tests that kill more
+first order mutants kill proportionately more second and third order mutants.
+Morell~\cite{morell1990atheory} provided a theoretical treatment
+of fault based testing. Morell suggested that the competent programmer
+hypothesis is same as \emph{alternate sufficiency} in fault based testing
+which suggests that at least one of the alternates in the arena being considered
+is the correct version, and also provided a formal treatment of the
+coupling effect~\cite{morell1987amodel}
+(i.e. the assumption is that fault masking has low probability of occurrence).
+Morell~\cite{morell1983a} also provides a proof that no general algorithm exists
+to identify existence of coupling between faults.
+Wah et al.~\cite{wah1995fault,wah2000atheoretical,wah2001theoretical,wah2003ananalysis} using a
+simple model of finite functions (the \emph{q-function} model, where \emph{q}
+represents the number of functions thus composed) showed that the survival ratio of first and
+second order test sets are respectively $\frac{1}{n}$ and $\frac{1}{(n^2 - n)}$
+where $n$ is the order of the \finput~\cite{jia2011analysis}.
+A major finding of Wah is that \emph{the coupling effect weakens as the system
+size (in terms of number of functions in an execution path) increases (i.e. $q$ increases),
+and it becomes unreliable when the system size nears the domain of functions}.
+Another important finding was that \emph{minimization of test sets has a
+detrimental effect}. That is, for $n$ faults, one should use $n$ test cases, with
+each test case able to detect $n-1$ faults (rather than a single fault) to
+ensure that the test suite minimizes the risk of missing higher order faults due
+to fault masking.
+Kapoor~\cite{kapoor2006formal} proved the existence of the coupling effect on
+logical faults.
+The competent programmer hypothesis was quantified recently by Gopinath et al.~\cite{gopinath2014mutations}.
+Voas et al.~\cite{voas1993semantic} and later Woodward et al.~\cite{woodward2000testability}
+suggests that the \emph{domain} to
+\emph{range} ratio has an impact in hiding faults. Specifically, functions
+with a high \emph{DRR} tend to mask faults. A similar measure is Dynamic Range to Domain
+ratio studied by Al-Khanjari et al.~\cite{alkhanjari2003investigating}. They
+found that for some programs there is a strong relationship between the
+ratio and testability, but it is weak for others.
+
+Androutsopoulos et al.~\cite{androutsopoulos2014an} suggested an
+approach using information theoretic measures to study failed error
+propagation. It was also found that one in ten tests suffered from failed
+error propagation. Clark et al.~\cite{clark2012squeeziness} found that
+likelihood of collisions were strongly correlated with an information theoretic
+measure called \emph{squeeziness}, which is related to the amount of information
+destroyed after applying the function to its input. Hence choosing a path for
+tests that minimize squeeziness would reduce fault masking.
+
+A fruitful area of research has been reducing the cost of mutation
+analysis, broadly categorized as \textit{do smarter}, \textit{do
+faster}, and \textit{do fewer} by Offutt et al.~\cite{offutt2001mutation}.
+The \textit{do smarter} approaches include space-time trade-offs, weak
+mutation analysis, and parallelization of mutation analysis. The \textit{do
+faster} approaches include mutant schema generation, code patching, and
+other methods to make the mutation analysis faster as a whole. Finally, the
+\textit{do fewer} approaches try to reduce the number of mutants examined,
+and include selective mutation and mutant sampling.
+
+\begin{comment}
+Various studies have tried to tackle the problem of approximating the full
+mutation score without running a full mutation analysis.  The idea of
+using only a subset of mutants (\textit{do fewer}) was conceived first
+by Budd~\cite{budd1980mutation} and Acree~\cite{acree1980mutation}
+who showed that using just 10\% of the mutants was sufficient to
+achieve 99\% accuracy of prediction for the final mutation score. This
+idea was further investigated by Mathur~\cite{mathur1991performance},
+Wong et al.~\cite{wong1993mutation,wong1995reducing}, and Offutt et
+al.~\cite{offutt1993experimental} using the Mothra~\cite{demillo1988an} mutation
+operators for FORTRAN.  Lu Zhang et al.~\cite{zhang2010isoperator} compared
+operator-based mutant selection techniques to random mutant sampling,
+and found that random sampling performs as well as the operator selection
+methods.  Lingming Zhang et al.~\cite{zhang2013operator} compared various
+forms of sampling such as stratified random sampling based on operator strata,
+stratified random sampling based on program element strata, and a combination
+of the two. They found that stratified random sampling when strata were
+used in conjunction performed best in predicting the final mutation score,
+and as few as 5\% mutants was sufficient sample for a 99\% correlation with the actual
+mutation score. Recently, it was found~\cite{gopinath2015howhard} that $9,604$
+mutants were sufficient for obtaining $1\%$ accuracy for $99\%$ of the projects,
+irrespective of the independence of mutants, or their total population.
+\end{comment}
+
+An important area of research when considering the coupling effect is that of
+higher order mutants~\cite{jia2008constructing,jia2009higher,nguyen2014problems}. The important
+idea here is that of subsuming higher order mutants, which are mutants that are
+harder to kill than their constituent mutants. These are mutants where there is
+at least a partial masking of effect of the first mutant by the second mutant.
+While incidence of such mutants are low (as our results show), they are
+important for the simple reason that they represent the hard to find bugs that
+tend to interact, and hence represent a different class of bugs.
+
+Our research is an extension of the theoretical work of Wah~\cite{wah2000atheoretical}
+and Offutt~\cite{offutt1989thecoupling,offutt1992investigations}. The
+major theoretical difference from Wah~\cite{wah2000atheoretical} is that, given
+a pair of faulty functions that compose, we try to find the probability that,
+for given test data, the second function masks the error
+produced by the first one.  On the other hand, Wah~\cite{wah2000atheoretical}
+tries to show that the coupling effect exists considering the \emph{entire}
+program composed of \emph{q} functions, each having a single fault (given by
+\emph{q} in the \emph{q}-function model).
+% TODO: multi-fault functions. -- change in domain.
+Next, Wah~\cite{wah2000atheoretical} assumes semantic separability of all
+complex faults. However, as we show, there exist a class of complex faults that
+are not semantically separable. We make this restriction clear.
+%Wah~\cite{wah2000atheoretical}
+%only considers functions which have same \finput $\mathbb{N}$ as input and output.
+% Next, we use \emph{combinatory-calculus}, a formalism which is equivalent
+% in power to any other representation of programs. Its use allows conversion from,
+% and to, any other representation of computable programs. The use of
+% \emph{combinatory-calculus} is important in that our analysis
+% (and the analysis of Wah~\cite{wah2000atheoretical}) depends on separability of
+% faults. This can be achieved \emph{if and only if} the faults can be separated
+% in the combinatory calculus form. This restriction is not made precise in
+% Wah~\cite{wah2000atheoretical}. The use of \lcalc and
+% \emph{combinatory logic} also justifies the use of single parameter functions,
+% which is assumed as given in Wah~\cite{wah2000atheoretical}.
+Further, our
+analysis shows that the probability of coupling is related to the \foutput,
+not the \finput, as Wah~\cite{wah2000atheoretical} suggests. In fact,
+Wah~\cite{wah2000atheoretical} considers only functions which have exactly same
+\emph{domain} and \emph{range}, and hence are more restricted than our analysis.
+Finally, we show that even if syntax is considered, our analysis results remains
+valid.
+
+With regard to the work by Offutt~\cite{offutt1992investigations}, the primary
+difference is in the empirical relation we attempt to demonstrate. While
+Offutt~\cite{offutt1992investigations} evaluates the traditional coupling
+effect, and shows the empirical relation with respect to \emph{all} simple
+faults and their combinations, we aim to demonstrate the \efaultT
+and evaluate the relation between any pair of faults, and the combined fault
+including both.
+
+
+
+\section{Theory of Fault Coupling}
+\label{sec:theory}
+%The theory of coupling was investigated by Wah~\cite{wah2000atheoretical}, who
+%proposed a simplified \emph{q}-function model (consisting of \emph{q} composed
+%functions) for theoretical analysis.
+
+We start with a functional view of programs where programs are constructed by
+composition of different functions (this an assumption that was also adopted by Wah~\cite{wah2003ananalysis}).
+While Wah considered composition of \emph{q} functions, which may have as many
+as \emph{q} faults, we consider only pairs of faulty functions. This is because
+any faulty program with a number of separable faults can be modeled as
+composition of two faulty functions, which may themselves contain complex
+separable faults. Hence, a theoretical evaluation of faulty function pairs is
+sufficient to model higher order faults.
+
+%\greybox{
+We note that our analysis
+is subject to these major assumptions,
+also made by Wah~\cite{wah2000atheoretical}:
+in the initial phase, we assume that we can model programs as mathematical functions. This
+is the biggest assumption that we make, since there can be an infinite number
+of syntactical equivalent alternatives to any given program.
+% To make it tractable, we assume that syntax has a uniform impact on faulty and non-faulty
+% versions, and modeling programs as functions reasonable.
+We assume finite \finput and \foutput for functions considered, and only total
+functions. We assume that faulty versions of a function have same \finput and
+\foutput as that of the non-faulty version\footnote{
+In practical terms, the (\finput,\foutput) of a function is its type signature.
+It is possible that the \emph{range} (or \emph{image}) of a faulty version may
+differ from the non-faulty version. However, we assume that a valid alternate
+that survives the compiler will
+have same type signature, and hence same \foutput.
+}.
+% Next, we assume a single faulty input out of the entire \emph{domain}. This need
+% not be true in the real world. -- TODO: do we need this assumption?
+Further, we model single parameter functions. We note that any function can be
+regarded as a single parameter function by considering their input as composed
+of a tuple of all the original parameters. That is, we consider a function with
+two inputs -- say $a$ and $b$ as a function taking a tuple: $(a,b)$ as input,
+with size of \emph{domain} given by $dom(a) \times dom(b)$.
+
+A significant difference from the standard \qfunction model of Wah is that,
+while Wah considers how a known number of test inputs (1, 2, 3 and
+higher) some of which can detect some of the component faulty functions (there
+can be as many as $q$ faulty functions) can together detect the composite faulty
+function, we consider the probability of any single test input that can detect a
+fault being masked by the addition of a new fault.
+% Further,
+% Wah derives the expected number of survivors, while we determine the average
+% survival ratio of a fault.
+This allow us to significantly simplify our analysis.
+
+% Finally we assume the separability of fault pairs.
+In order for our theory to be applied, the fault pair needs to be separated out
+such that first function and second function can be clearly demarcated. The
+theory relies on the \foutput of first function being the \finput of the second.
+This means that the influence of first should be limited to the input parameter
+for the second, and the first completely independent of the second (we show
+later how this condition may be relaxed). There are various places where this
+assumption may not hold. Note that the theory \emph{does not} rely on the
+constituent faults being considered to be simple.
+
+A major idea in our analysis is the semantic separability of faults. Two faults
+present in a function are said to be separable \emph{if and only if} the
+smallest possible chunk containing both faults can be decomposed into two
+functions $g$ and $h$ such that each fault is isolated within a single function
+(providing $g_a$ and $h_b$ as faulty functions), the behavior of composition
+$h \circ g$ equals the behavior of the original chunk in terms of input and
+output , and composition $h_b \circ g_a$ equals the behavior of the function
+with both faults. A \emph{chunk} here is any small section of the program that can
+be replaced by an independent function preserving the behavior.
+
+That is, given a function:
+\begin{lstlisting}
+def functionX(x, y, n)
+  for i in (1..n):
+      y = faultyA(x)              (1)
+      if odd(i): x = faultyB(y)   (2)
+      x += 1
+\end{lstlisting}
+The lines (1) and (2) together form a chunk.
+The interaction between the
+faults and their separability is discussed next.
+%}
+
+\subsection{Interaction Between Faults}
+We define two kinds of interaction between faults here: \emph{weak}
+interaction, and \emph{strong} interaction. \emph{Weak}
+interactions occur when faults can be isolated into different
+functions such that the output of the function containing the first fault is
+the input of a function containing the second fault.
+
+That is, given two faults $\hat{a}$ and $\hat{b}$ in a function $f$, which
+can be split into $f_{ab} =  h_{b} \circ g_{a}$, where $g_{a}$ and $h_{b}$
+are faulty functions, the only interaction between $\hat{a}$ and $\hat{b}$ is
+because the fault $\hat{a}$ modifies the input of $h$ (or $h_{b}$) from $g(i_0)$
+to $g_{a}(i_0)$ (where $i_0$ is an input for $f$). That is, the interaction
+can be represented by a modified input value.
+
+\emph{Strong} interactions happen when the interpretation of the second
+fault is affected by the first fault. In this case, we cannot separate them
+out into independent faulty functions.
+% For example, consider the \lcalc expression $\lambda\,x\,y\,.\,x\,y$
+% and a corresponding faulty expression $\lambda\,y\,x\,.\,x\,y$.
+% Here, while there are two faults ($x \rightarrow y, y \rightarrow x$), they
+% cannot be separated into isolated composing functions because the interpretation of the
+% second is dependent on whether the first fault is present or not.
+For a practical example, consider the following function in Python:
+
+\begin{lstlisting}
+  def swap(x,y): x,y=y,x
+\end{lstlisting}
+Say this was mutated into
+\begin{lstlisting}
+  def swap(x,y): x,y=x,y
+\end{lstlisting}
+Clearly, there were two independent lexical changes: $x \rightarrow y$
+and $y \rightarrow x$. However, the
+disassembly of the original program is given by
+\begin{lstlisting}
+>>> dis.dis(swap)
+  1   0 LOAD_FAST       1 (y)
+      3 LOAD_FAST       0 (x)
+      6 ROT_TWO
+      7 STORE_FAST      0 (x)
+     10 STORE_FAST      1 (y)
+     13 LOAD_CONST      0 (None)
+     16 RETURN_VALUE
+\end{lstlisting}
+It can be seen that the changes in Python resulted in intertwined changes,
+and hence cannot be separated out.
+Since the faults cannot be separated out, \emph{strong} interactions produce
+faults that have a different characteristic from the simple faults from which
+they are built, and hence should be considered as independent atomic
+faults\footnote{We note that Wah's analysis~\cite{wah2000atheoretical} assumes
+that all complex faults can be separated, and does not take into consideration
+such strongly interacting faults.}.
+Why should we consider the semantically inseparable faults as independent
+faults? An intuitive argument is to consider two functions that
+implement $id$ (these are not strongly interacting).
+That is, given any value $x$, we have $g(x) = h(x) = x$. If two faults $\hat{a}$, and
+$\hat{b}$ occur as we suggest above in $g$ and $h$, causing inputs $i$ to $g_a$
+and inputs $j$ to $h_b$ to fail, then the faulty inputs for $h_b \circ g_a$ are
+bounded by $i \cup j$, where $i$ represents inputs to $f$ that result in faulty
+outputs due to faults in $g$ and $j$ represents inputs to $f$ resulting in faulty
+outputs due to faults in $h$.
+
+What about fault masking? Any input $i$ that failed for $g_a$ could possibly
+result in an input value that would cause a failure for $h_b$. For any element
+outside of $i$, there is no possibility of two faults acting on it, and hence
+no possibility of fault masking.
+However, if the faults are not semantically separable, one cannot make these
+guarantees, as the faulty inputs may be larger than $i \cup j$ or even
+completely different. In the general case, when the interaction is weak, we
+expect the faulty output for up to $i \cup j$.
+These are represented in Figure~\ref{fig:rep}.
+
+This is simple enough to prove formally. Consider a function $f$ that has \finput $x$. Say
+that it can be represented as $h \circ g$ using two independent functions.
+Replacing $g$ with $g_a$ causes $i \in x$ inputs to result in faults.
+Similarly, replacing $h$ with $h_b$ causes $j \in x$ inputs to $f$ to result in
+faults. Joining together to form $f_{ab}$, we know that any of $i \in x$ has a
+potential to produce a faulty output unless it was masked by $h_b$. Similarly,
+any of $j \in x$ also has the possibility of producing a faulty output.
+Now, consider any element $k$ not in either $i$ or $j$. It will not result in
+a faulty output while passing through $g_a$ because it is not in $i$, further,
+the value $g_a(k) = g(k) = k_1$. We already know that $k_1$ would not result in
+a faulty output from $h_b$ because $k \notin j$. Hence, any element
+$k \notin i \cup j$ will not be affected by faults $\hat{a}$ and $\hat{b}$.
+
+Remember that we can make this assertion only because we can replace $g$ and
+$h$ separately. Suppose it is a strong interaction between $\hat{a}$ and $\hat{b}$.
+In this case, any function could potentially be a replacement for $f$. Hence, any
+element in $x$ may potentially result in a fault when $f_{ab}$ is applied. Indeed,
+we are not the first ones to make this observation. These kinds of interactions
+where the higher order faults have a different behavior (and result in different
+inputs with faulty outputs) than the component
+faults are called de-coupled higher order mutants by Harman et al.~\cite{harman2010manifesto}.
+
+%---
+\begin{comment}
+For example consider the following function, and the test cases:
+\begin{lstlisting}
+  def not3(a):
+ o)  return a != 3
+m1)  return a >  3
+m2)  return a != 2
+m3)  return a >  2
+
+                    m1 m2 m3
+                    --------
+t1) not3(1) = T :   F, T, T
+
+t2) not3(4) = T :   T, F, T
+t3) not3(5) = T :   T, T, T
+\end{lstlisting}
+
+As before, $m1$ and $m2$ are constituent faults of $m3$. The test $t1$ detects
+$m1$, and test $t2$ detects $m2$. But $m3$ is triggered by neither alone, but
+combined to $m3$ it triggers $t3$.
+
+\end{comment}
+%---
+Depending on the syntax and semantics of the language used, there may be
+different language features
+(another common example is the order of arguments to a function)
+that cause faults to be strongly interacting.
+
+\subsection{Analysis}
+%This suggests that,
+Say we have a program $f$, where we
+have two simple faults $\hat{a}$, and $\hat{b}$, which can be
+applied to $f$ to produce two functions $f_a$ and $f_b$ containing one fault
+each, and $f_{ab}$ containing both faults (Figure~\ref{fig:lines}).
+
+Say such a program can be partitioned into two functions $g$ and $h$ such that
+\[
+  f = h \circ g
+\]
+with added restriction that the fault $\hat{a}$ lies in function $g$,
+producing an alternative function $g_a$, and the
+fault $\hat{b}$ lies in function $h$ producing $h_b$, such that the new faulty
+version of $f$ containing both is given by
+\[
+  f_{ab} = h_b \circ g_a
+\]
+We note that the particular kind of fault depends on the syntax and semantics
+of the programming language used, and there can be fault pairs that cannot be
+separated cleanly. As stated previously, we ignore these kinds of fault pairs
+as they are syntax dependent and strongly interacting. Hence, no general
+solution is possible for these faults.
+
+The basic question we are trying to resolve is, given that we can distinguish
+a fault in isolation using a given input, what is the probability that
+another fault would not result in the masking of that fault for the same input?
+
+That is, we are given a test input $i_0$ for $f$, that can distinguish between ($f$, $f_a$).
+%, and ($f$, $f_b$).
+The question is, what is the probability that ($f$, $f_{ab}$) can
+be distinguished by the same input?
+
+Since we know that $f_a$ is
+% , and $f_b$ are
+distinguished from $f$, we know that $g_a(i_0) \neq g(i_0)$. Hence, the function
+$h_b$ will have a different input than $h$. Thus, the question simplifies to:
+given an alternate input for function $h$ (or anything that can be substituted
+in its place), what is the probability that a faulty $h$, with the new input
+$g_a(i_0)$ will result in same output as the old $h$, with the old input
+$g(i_0)$?
+
+Let us assume for simplicity\footnote{
+There are two factors that make this assumption reasonable: first,
+for real world functions, there is almost always a limit on the \finput and
+\foutput whether it be due to the data type used, or due to constraints such
+as the available resources such as memory. Second, as we show later, the size
+of the \foutput is actually inversely proportional to the masking effect,
+which helps our case as the \foutput increases (note that
+\finput will always be larger than \foutput). We also note that the assumption of
+finite \finput was also made by Wah~\cite{wah2000atheoretical}.
+} that functions $g$ and $h$ have fixed \finput
+and a \foutput given by
+\begin{align*}
+g \in G &: \mathbb{L} \rightarrow \mathbb{M} \\
+h \in H &: \mathbb{M} \rightarrow \mathbb{N} \\
+\end{align*}
+That is, $h$ belongs to a set of functions $H$, which has a \finput $M$, and a
+\foutput $N$ such that $m = |M|$ and $n = |N|$. Considering all possible functions
+in $H$, with the given \finput and \foutput, there will be $n^m$ unique functions
+in $H$ (separated by at least one different $\{input,output\}$ pair).
+
+The only constraint on $h_b$ we have is that $h_b(g_a(i_0))$ should result in
+the exact same output as $h(g(i_0))$. That is, for some particular input for
+$h_b$, the output is fixed at a particular output. We are looking for
+functions that can vary in every other $\{input,output\}$ pair except for the
+pair given by $\{g_a(i_0), h(g(i_0)\})$. There are $n^{m-1}$ functions that
+can do that out of $|H| = n^m$ functions. That is, the \kappaT is
+given by
+\[
+  \kappa = 1 - \frac{n^{m-1}}{n^m}
+\]
+This is simplified to $ 1 - \frac{1}{n}$ of the total number of eligible functions
+where $m$ is the size of \finput, and $n$ is the size of \foutput of the function. 
+That is, given any test input, the probability of the \couplingC effect where
+the fault in one constituent is not masked by the fault in another is $1 - \frac{1}{n}$,
+and $\frac{1}{n}$ tends to be very small when the \foutput of the function ($n$) is
+large.
+
+A symmetric argument can be made when the function fixed is $h$, and $g$
+varies. There are $m^l$ functions in $G$, of which $m^{l-1}$ can be used as
+a replacement without affecting $\{input, output\}$, in which case, the
+probability of composite coupling effect is $1 - \frac{1}{m}$
+where $m$ is the \foutput
+\footnote{We note that the logic of probability is very similar to
+Wah~\cite{wah2000atheoretical}, and this is the same value derived by Wah
+for single test input, where $n$ is the \finput of the function as Wah
+does not consider functions that have a different \finput and \foutput.}.
+
+For example, in the case of a function with its \finput and \foutput restricted to
+boolean, with \finput $2$ and \foutput $2$, the probability of \couplingC effect
+is $1 - \frac{1}{2} = 0.5$, and in the
+case of an octet ($8$ bits), the probability of \couplingC effect
+is $0.9961$ (given equal probability for all faults).
+
+This is easy to verify in the case of booleans: There are $2^2$ possible unique
+boolean functions. $f_{id}$ is just the identity function, and $f_{not}$ is the $not$
+function. $f_{true}$ always returns $true$, and $f_{false}$ always returns
+$false$. Consider a combination of functions such as $f = f_{id} \circ f_{not}$.
+We consider a test input $true$, which will be converted to $false$ by
+function $f$. Say there is an error in $f_{id}$, and we mistakenly used
+$f_{false}$ instead (note that we would not be able to use $f_{true}$ since we
+assume that the original input would have detected the error if it was taken
+individually). The question is, how many ways can you make a faulty
+$f_{not}$ such that we get $false$? That is, which functions map $false$ to $false$?
+There are just two -- $f_{id}$, and $f_{false}$ which is 50\% of the available
+functions.
+
+
+\begin{figure}
+\begin{tikzpicture}
+\node[text width=3cm] at (1,1) {$h \circ g$};
+\node[text width=3cm] at (0.5,-1) {$g$};
+\node[text width=3cm] at (0.5,-3) {$h$};
+
+\draw (0,0) circle [x radius=1.4cm, y radius=6mm];
+\draw (0,-2) circle [x radius=1.2cm, y radius=5mm];
+\draw (0,-4) circle [x radius=1cm, y radius=4mm];
+
+\draw[-,blue] (0,0) circle (1pt) -- (0,-2) circle (1pt) node[pos=.5,above] {} node[pos=-.1]{a};
+\draw[-,blue] (0,-2) circle (1pt) -- (-0,-4) circle (1pt) node[pos=1.5,below] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (-.3,0)  circle (1pt) -- (-0.3,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{b};
+\draw[-,blue] (-0.3,-2)  circle (1pt) -- (-0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (-.6,0)  circle (1pt) -- (-0.5,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{c};
+\draw[-,blue] (-0.5,-2)  circle (1pt) -- (-0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (-.9,0)  circle (1pt) -- (-0.7,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{d};
+\draw[-,blue] (-0.7,-2)  circle (1pt) -- (-0.6,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (.3,0)  circle (1pt) -- (0.2,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{e};
+\draw[-,blue] (0.2,-2)  circle (1pt) -- (0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (.6,0)  circle (1pt) -- (0.4,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{f};
+\draw[-,blue] (0.4,-2)  circle (1pt) -- (0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (.9,0)  circle (1pt) -- (0.6,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{g};
+\draw[-,blue] (0.6,-2)  circle (1pt) -- (0.6,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\node[text width=3cm] at (2 + 1,-1) {$g'$};
+\node[text width=3cm] at (2 + 1,-3) {$h'$};
+%---------------------
+\draw (3 + 0,0) circle [x radius=1.4cm, y radius=6mm];
+\draw (3 + 0,-1.5) circle [x radius=1.2cm, y radius=3mm];
+\draw (3 + 0,-2.5) circle [x radius=1.2cm, y radius=3mm];
+\draw (3 + 0,-4) circle [x radius=1cm, y radius=4mm];
+
+\draw[-,blue] (3 + 0,0) circle (1pt) -- (3 + 0,-2 + 0.5) circle (1pt) node[pos=.5,above] {} node[pos=-.1]{a};
+\draw[-,red] (3 + 0,-2-0.5) circle (1pt) -- (3 + 0.2,-4) circle (1pt) node[pos=1.5,below] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (3 + -.3,0)  circle (1pt) -- (3 + -0.3,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{b};
+\draw[-,blue] (3 + -0.3,-2-0.5)  circle (1pt) -- (3 + -0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (3 + -.6,0)  circle (1pt) -- (3 + -0.5,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{c};
+\draw[-,blue] (3 + -0.5,-2-0.5)  circle (1pt) -- (3 + -0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,red] (3 + -.9,0)  circle (1pt) -- (3 + -0.3,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{d};
+\draw[-,blue] (3 + -0.7,-2-0.5)  circle (1pt) -- (3 + -0.6,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,red] (3 + .3,0)  circle (1pt) -- (3 + 0.6,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{e};
+\draw[-,blue] (3 + 0.2,-2-0.5)  circle (1pt) -- (3 + 0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (3 + .6,0)  circle (1pt) -- (3 + 0.4,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{f};
+\draw[-,blue] (3 + 0.4,-2-0.5)  circle (1pt) -- (3 + 0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (3 + .9,0)  circle (1pt) -- (3 + 0.6,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{g};
+\draw[-,red] (3 + 0.6,-2-0.5)  circle (1pt) -- (3 + 0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+%---------------------
+\node[text width=3cm] at (7,1) {$h' \circ g'$};
+\draw (6 + 0,0) circle [x radius=1.4cm, y radius=6mm];
+\draw (6 + 0,-2) circle [x radius=1.2cm, y radius=3mm];
+\draw (6 + 0,-4) circle [x radius=1cm, y radius=4mm];
+
+\draw[-,red,dashed] (6 + 0,0) circle (1pt) -- (6 + 0,-2 ) circle (1pt) node[pos=.5,above] {} node[pos=-.1]{a};
+\draw[-,red] (6 + 0,-2) circle (1pt) -- (6 + 0.2,-4) circle (1pt) node[pos=1.5,below] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (6 + -.3,0)  circle (1pt) -- (6 + -0.3,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{b};
+\draw[-,blue] (6 + -0.3,-2)  circle (1pt) -- (6 + -0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (6 + -.6,0)  circle (1pt) -- (6 + -0.5,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{c};
+\draw[-,blue] (6 + -0.5,-2)  circle (1pt) -- (6 + -0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,red] (6 + -.9,0)  circle (1pt) -- (6 + -0.3,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{d};
+\draw[-,blue,dotted] (6 + -0.7,-2)  circle (1pt) -- (6 + -0.6,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,red,dotted] (6 + .3,0)  circle (1pt) -- (6 + 0.6,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{e};
+\draw[-,blue,dotted] (6 + 0.2,-2)  circle (1pt) -- (6 + 0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (6 + .6,0)  circle (1pt) -- (6 + 0.4,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{f};
+\draw[-,blue] (6 + 0.4,-2)  circle (1pt) -- (6 + 0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,red,dashed] (6 + .9,0)  circle (1pt) -- (6 + 0.6,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{g};
+\draw[-,red] (6 + 0.6,-2)  circle (1pt) -- (6 + 0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+
+\end{tikzpicture}
+\caption{Weak fault interaction: The first function \emph{g} is faulty at inputs \emph{d} and \emph{e}, while second function \emph{h} is faulty at inputs \emph{a} and \emph{g}. Hence, we expect \emph{d, e, a, g} to produce faulty outputs for the combined function \emph{$h' \circ g'$} if only weak interaction is considered. The input \emph{e} has a possibility of being masked by the fault at \emph{g} in the second function \emph{h}.}
+\label{fig:rep}
+\end{figure}
+
+
+\subsection{Recursion and Iteration}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+\draw[-|,blue] (0,-1.5) -- (3.5,-1.5) node[pos=.5,sloped,above] {$\frac{1}{n}$} node[pos=-.1,sloped]{$i_0$};
+\draw[-|,red,dotted] (0,-1.5) circle (2pt) -- (3.5,-3) node[pos=.5,sloped,below] {$\frac{n-1}{n}$};
+\draw[|-|,blue] (3.5,-1.5) -- (7,-1.5) node[pos=.2,sloped,above] {$\frac{1}{n}\times \frac{1}{n}$} node[pos=1.2]{$\frac{1}{n}$};
+\draw[|-|,red,dotted] (3.5,-1.5) -- (7,-3) node[pos=.4,sloped,above] {$\frac{n-1}{n}\times \frac{1}{n}$} node[pos=1.2]{};
+
+\draw[|-|,red,dotted] (3.5,-3) -- (7,-3) node[pos=.5,sloped,above] {$\frac{n-1}{n}\times\frac{n-1}{n}$} node[pos=1.2]{$\frac{n-1}{n}$};
+\draw[|-|,blue] (3.5,-3) -- (7,-1.5) node[pos=.2,sloped,above] {$\frac{1}{n} \times \frac{n-1}{n}$} node[pos=1.2]{};
+\end{tikzpicture}
+\caption{Recursive interaction. The \emph{blue solid} lines represent the masking values where the values are same as what would be expected before the fault was introduced, and the \emph{red dotted} lines represent values that are different from the non-faulty version so that faults could be detected.}
+\label{fig:recursion}
+\end{figure}
+
+A common feature of general purpose languages is \emph{recursion} and
+\emph{iteration}. These present challenges to our analysis. For example,
+consider the loop below.
+
+\begin{lstlisting}
+  while y > 0: y = h(g(y)
+\end{lstlisting}
+
+Here, the two functions $g$ and $h$ are otherwise independent. However, the
+input of $h$ influences $g$, and vice versa. Here, we do not know when the
+loop will end, and any faults will be detected. The faults may be detected
+after a larger or smaller number of iterations than the non faulty version
+of the program. Hence, what we can do, is to consider the chances of
+propagation of the faulty value after each iteration. That is, if a faulty
+value is present after executing the function $g_a$ once, what are the
+chances that it will be caught at the end of each iteration?
+
+Let us use $f$ to denote the program segment composed of $g$ and $h$, as before.
+After the first iteration of $f$, we will have $\frac{1}{n}$ possibility
+for fault masking as we discussed before, and $\frac{n-1}{n}$ possibility
+for detectable faulty values. Now, consider the next iteration. In this case,
+of the original $\frac{1}{n}$ masked outputs, $\frac{1}{n}$ will again be
+masked, for a total of $\frac{1}{n^2}$, and the remaining $\frac{(n-1)}{n^2}$
+will have a value that is faulty. Consider the original $\frac{n-1}{n}$ that
+had faulty values in the first iteration. Out of that, $\frac{1}{n}$ will
+be masked in the second iteration (i.e. $\frac{n-1}{n^2}$). Similarly,
+$\frac{(n-1)^2}{n^2}$ of the original faulty outputs will remain faulty.
+That is, after second iteration, we will have $\frac{1}{n^2} + \frac{n-1}{n^2} = \frac{1}{n}$
+masked output values. Similarly, we will have $\frac{n-1}{n^2} + \frac{(n-1)^2}{n^2} = \frac{1-n}{n}$
+faulty output values. That is, after each iteration, we will have $\frac{1}{n}$
+possibility of fault masking (See Figure~\ref{fig:recursion}). Hence, \faultT will hold even for recursion and
+iteration.
+
+A question may be asked, what happens for functions where the iteration may
+proceed in different paths during different executions. For example:
+
+\begin{lstlisting}
+  for i in 1..10:
+    if odd(i): x = g(y)
+    else: y = h(x)
+\end{lstlisting}
+
+In programs such as this, one may unroll the loop, i.e.
+\begin{lstlisting}
+  for i in 1..10:2:
+      x = g(y)
+      y = h(x)
+\end{lstlisting}
+which can make it amenable to the above treatment. Recursion can also be
+treated in a same fashion. We do not claim that this is exhaustive. There could
+exist other patterns of recursion or iteration that do not fit this template.
+However, most common patterns of recursion and iteration could be captured in
+this pattern.
+
+Can we extend the bounds we found ($i \cup j$ for faulty outputs) to recursion?
+Unfortunately, it is possible for a faulty function to interact with its own
+output during recursion, and hence mask a failure. Hence, we can not bound the
+failure causing inputs in a doubly faulty function that incorporates recursion.
+
+\subsection{Accounting for Multiple Faults}
+What happens when there are multiple faults? Say, we have a system modeled by
+$p \circ q \circ r \circ s \circ t \circ u$, where any of the functions may be
+faulty or not faulty, for example
+$p_a \circ q \circ r_b \circ s_c \circ t_d \circ u$. We can not directly apply
+the technique in recursion because there are non-faulty functions interspersed.
+The thing to remember here is that a non faulty function immediately adjacent to
+a faulty function can together be considered a faulty function. Hence, the above
+reduces to $(p_a \circ q) \circ r_b \circ s_c \circ (t_d \circ u)$, or equivalently
+$pq_a \circ r_b \circ s_c \circ tu_d$. This is now
+amenable to the treatment in Figure~\ref{fig:recursion} because each function
+now can produce $\frac{1}{n}$ non-faulty and $\frac{n-1}{n}$ faulty outputs. An
+additional complication is that a general expression is not possible unless we
+simplify further, and assumes that \finput and \foutput of all functions are same. 
+With this simplification, even when we consider a number of faulty functions,
+the mean ratio of fault masking remains the same at $\frac{1}{n}$.
+
+Indeed, we note that this is one of the significant differences from Wah's
+analysis. Wah does not attempt to collapse the non-faulty functions to their
+neighbours. Why do we do this? Because we know that each faulty function on
+their own was detected by the test suite. That is, we know that
+$p \circ q_a \circ r \circ s \circ t \circ u$ would have been detected.
+Hence, we can certainly consider $pq_a \circ r \circ s \circ t \circ u$ as
+the set of functions where the function $pq_a$ is the faulty function with
+an atomic fault.
+
+\subsection{Dynamically Checked Languages}
+
+How can we apply the composite coupling hypothesis to \emph{dynamically checked}
+languages, or \emph{unityped} languages? In both cases, any single function can
+be taken to have the exact same \finput and \finput, the size of which may be
+taken to be extremely large (but finite due to constraints of the environment).
+Intuitively, this is because any function may be replaced by any other, and
+one may not identify a faulty input type until execution passes through that
+function. Hence in such languages, we can expect the \kappaT to be large.
+
+\subsection{Impact of Syntax}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+\draw[-|,blue] (0,0) circle (2pt) -- (2,0) node[pos=.5,sloped,above]{$g$} node[pos=-.1,sloped]{$i_0$};
+\draw[|-|,blue] (2,0) -- (4,0) node[pos=.5,sloped,above] {$h$} node[pos=1.3,sloped]{$f(i_0)$};
+
+\draw[-|,red] (0,-1.5) circle (2pt) -- (2,-2) node[pos=.5,sloped,below] {$g_a$};
+\draw[-|,blue,dotted] (0,-1.5) -- (2,-1.5) node[pos=.5,sloped,above] {$g$} node[pos=-.1,sloped]{$i_0$};
+%\draw[|-|,red,dotted] (2,-1.5) -- (4,-1) node[pos=.5,sloped,above] {$g_a$} node[pos=1.3]{$f_a(i_0)$};
+
+\draw[|-|,red] (2,-2) -- (4,-2.5) node[pos=.5,sloped,below] {$h_b$} node[pos=1.3]{$f_{ab}(i_0)$};
+\draw[|-|,blue,dotted] (2,-2) -- (4,-2) node[pos=.7,sloped,above] {$h$} node[pos=1.3]{$f_b(i_0)$};
+\draw[|-|,black,dotted] (2,-2) -- (4,-1.5) node[pos=.5,sloped,above] {$h_{b'}$} node[pos=1.65]{$f_{ab}(i_0) = f(i_0)$};
+\end{tikzpicture}
+\caption{Fault interaction ($g_a(i_0)$ is masked by $h_{b'}$)}
+\label{fig:lines}
+\end{figure}
+
+In order to model \couplingC, we relied on a simplification ---
+that all faults are equally probable. However, in the real world this is often not
+the case, with faults that are closer syntactically being more probable than
+faults which are not in the syntactic neighborhood of correctness.
+In fact, we have some
+reasonable estimate of the distribution of size of faults that programmers
+make~\cite{gopinath2014mutations}.
+
+Implementation of functions as code
+need not necessarily follow the same distribution as that of their mathematical
+counterparts. For example, for mathematical functions, there exist only 4
+functions that map from a boolean to a boolean. However, there can be an
+infinite number of program implementations of that function.
+The way it can be made tractable is again to consider the human element.
+The \emph{competent programmer hypothesis} suggests that faulty programs are
+close (syntactically) to the correct versions. So one need only consider a
+limited number of alternatives (the number of which is a function of the size
+of the correct version, if one assumes that each token may be legally replaced
+by another).
+% One could extend it to suggest
+% that a human programmer would also tend to prefer small programs that can
+% implement a given functionality, and this assumption can help make the number
+% of alternatives we consider tractable (the number of such alternatives then
+% becomes a (possibly exponential) function of the smallest program size).
+
+As soon as we speak about syntactic neighborhood,
+the syntax of a language can have a large influence on which faults can be considered to be in a
+neighborhood. However, we note that most languages seem to follow a similar
+distribution of faults with a size below 10 tokens for 90\% of faults~\cite{gopinath2014mutations}.
+
+Let us call the original input
+to $h$, $g(i_0) = j_0$, and the changed value $g_a(i_0) = j_a$.
+Similarly, let $f(i_0) = k_0$, $f_a(i_0) = k_a$, $f_b(i_0) = k_b$,
+and $f_{ab}(i_0) = k_{ab}$. Given two inputs $i_0$, and $i_1$ for
+a function $f$, we call $i_0$, and $i_1$ \emph{semantically close} if
+their execution paths in $f$ follow equivalent profiles, e.g., taking the same
+branches of conditionals. We call $i_0$ and $i_1$ \emph{semantically far}
+in terms of $f$ if their execution profile is different.
+
+Consider the possibility of masking the output of $h_b$ by $g_a$
+($g_{a'}$ in Figure~\ref{fig:lines}). We already
+know that $h(j_a) = k_b$ was detected. That is, we know that
+$j_a$ was sufficiently different from $j_0$, that it propagated through $h(j_a)$ to be caught by a test case. Say $j_a$ was \emph{semantically far}
+from $j_0$, and the difference in code path contained the fault $\hat{a}$.
+In that case, the fault $\hat{a}$ would not have been executed, and
+since $k_{ab} = k_b$, it will always be detected.
+
+On the other hand, say $j_a$ was \emph{semantically close} to $j_0$ in terms of
+$g$ and the fault $\hat{a}$ was executed. There are again three possibilities.
+The first is that $\hat{a}$ had no impact, in which case the analysis
+is the same as before. The second is that $\hat{a}$ caused a change in the output.
+It is possible that execution of $\hat{a}$ could be problematic enough to always
+cause an error, in which case we have $k_{ab} = k_a$, and detection.
+Thus masking requires $k_{ab}$ to be equal to $k_0$.
+
+Even if we assume that the function $h_b$ is close syntactically to $h$, and
+that this implies semantic closeness of functions $h$ and $h_b$, we expect
+the value $k_{ab}$ to be near $k_b$, not $k_0$.
+This suggests that masking, even when considered in the light of
+syntactical neighborhood, is still unlikely, but this belief requires
+empirical verification since we are unable to assign probabilities to
+the cases above.  Our empirical data (provided in the next section of
+this paper) should shed light on the actual incidence of masking when
+syntactic/semantic neighborhoods are taken into account, since real
+faults are likely in the syntactic and semantic neighborhood of the
+correct code.
+
+A statistical observation can further buttress our argument. We know that
+if all functions were equally probable, fault masking has low probability.
+Now, consider the functions that are syntactically close to a given function.
+For most input values, we can assume that the syntactically close functions
+will have same output as that of the given function, more so than functions
+that are far away lexically. If $h$ did not mask a value originally, (which
+we know since we were able to detect fault $h(g_a(i_0))$), then the
+syntactically close functions to $h$ will with a higher probability than a
+uniform sample, produce the same value as $h(g_a(i_0))$, which will be detected
+as faulty.
+
+
+\subsection{Can Strong Interaction be Avoided?}
+
+Remember that the argument of mutation analysis is that if a test suite can find
+all atomic faults, then by \faultT, a large percentage ($\kappa$) of
+complex faults will also be found by the same test suite. A problem with this
+is that one can in general never be sure that all atomic faults have been found,
+as any fault interaction has the potential to produce an atomic fault through
+strong interaction.
+Hence, it is interesting to ask, what features in a programming language
+contribute to strong fault interaction, and is there a representation of
+programs where strong fault interaction is guaranteed to be absent.
+
+The first question is, given that the strong interaction is dependent on the
+execution, can runtime environment or compiler order computation so that strong
+interaction is no longer present?
+
+Consider the function \emph{swap (a,b) = (b,a)} that we examined earlier. We
+see how one may mistakenly use \emph{id (a,b) = (a,b)} instead, and cause a
+strong interaction. Now, the question is, does there exist a way to split the
+two functions, so that the condition of separability can be satisfied?
+Given that there are only four possible functions that can operate on a tuple,
+(\emph{swap (a,b) = (b,a)}, \emph{id (a,b) = (a,b)}, \emph{dupleft (a,b) = (a,a)}, \emph{dupright (a,b) = (b,b)})
+we could check it exhaustively. The condition is that the functions representing
+single faults should individually cause a detectable deviation on their own, and
+on composition, result in same behavior as \emph{id}. Now, it can be seen that,
+neither of the single fault functions can behave like $swap$ since that
+represents \emph{no} fault, so they can not behave like $id$, since that suggests that
+the other faulty function behaves like $swap$. Hence, no compiler or runtime
+environment can remove the strong interaction in \emph{swap}.
+
+The next question is, where can we expect strong interaction to appear?
+While we can not provide an exhaustive overview of possible language features,
+we can demonstrate that even very simple languages such as the \lcalc are vulnerable
+to strong interaction. For example, consider the \lcalc expression $\lambda x\,y\,. y\,x$,
+and its faulty version $\lambda x\,y\,. x\,y$. There are two lexical points where
+the faults have been injected $\{x \rightarrow y, y \rightarrow x\} $. However,
+they cannot be separated out. That is, even simple features such as variables
+can cause strong interaction.
+
+
+
+\section{Methodology for Assessment}
+\label{sec:methodology}
+
+Our methodology was guided by two principles~\cite{siegmund2015views}:
+We sought to minimize the number of variables that were in play, striving to
+remove the effects of those variables whose impact was unknown.
+Second, our aim was to be as broadly general as possible in
+conclusions.  The programs from which we drew faults therefore had to be as realistic
+as possible, and the faults had to be real, and plausible enough
+to have happened in an environment where there was some standard of quality.
+
+For these reasons, we selected the Java common library projects from
+the Apache open-source project. Apache has a reputation of having a well maintained
+standard of quality for their projects, and the commits that go into their
+projects. They are also well known for having reasonably well tested projects.
+By choosing projects from a single source, we minimize the variability due
+to coding practices, development culture, and other possible confounding
+factors. However, the tradeoff is that Apache common library projects may not
+be representative of the broader software ecosystem. Further research is
+necessary to ensure that our findings remain valid for the broader ecosystem.
+
+\begin{table}
+\centering
+% latex table generated in R 3.2.3 by xtable 1.8-2 package
+% Wed Jul  6 14:44:12 2016
+\begin{tabular}{|r|l|r|r|r|r|}
+  \hline
+ & Projects & SLOC & TLOC & CPatches & Fails \\ 
+  \hline
+1 & commons-bcel & 30,175 & 3,155 & 148 &   6 \\ 
+  2 & commons-beanutils & 11,640 & 21,665 &  63 &   5 \\ 
+  3 & commons-cli & 2,665 & 3,768 &  71 &   5 \\ 
+  4 & commons-codec & 6,599 & 11,026 & 179 &   4 \\ 
+  5 & commons-collections & 27,820 & 32,913 & 333 &  16 \\ 
+  6 & commons-compress & 18,746 & 13,496 & 430 &  65 \\ 
+  7 & commons-configuration & 26,793 & 37,806 & 322 &  78 \\ 
+  8 & commons-csv & 1,421 & 3,168 & 150 &   8 \\ 
+  9 & commons-dbcp & 11,259 & 8,487 &  98 &  18 \\ 
+  10 & commons-dbutils & 3,064 & 3,699 &  43 &   1 \\ 
+  11 & commons-discovery & 2,320 & 268 & 171 &   1 \\ 
+  12 & commons-exec & 1,757 & 1,601 &  90 &   5 \\ 
+  13 & commons-fileupload & 2,389 & 1,946 & 129 &   8 \\ 
+  14 & commons-imaging & 31,152 & 6,525 & 174 &   4 \\ 
+  15 & commons-io & 9,813 & 17,968 & 177 &  18 \\ 
+  16 & commons-jexl & 10,921 & 9,509 &  54 &  10 \\ 
+  17 & commons-jxpath & 18,773 & 6,137 &  10 &   2 \\ 
+  18 & commons-lang & 25,468 & 43,981 & 571 &  49 \\ 
+  19 & commons-mail & 2,720 & 3,869 &  48 &   5 \\ 
+  20 & commons-math & 84,809 & 89,336 & 954 & 142 \\ 
+  21 & commons-net & 19,749 & 7,465 & 454 &  21 \\ 
+  22 & commons-ognl & 13,139 & 6,873 & 190 &   3 \\ 
+  23 & commons-pool & 5,242 & 8,042 & 149 &  12 \\ 
+  24 & commons-scxml & 9,524 & 5,119 &  74 &   7 \\ 
+  25 & commons-validator & 6,681 & 7,926 & 126 &  17 \\ 
+   \hline
+\end{tabular}
+
+\caption{Apache Commons Libraries. SLOC is the program size in LOC, TLOC
+is the test suite size in LOC, CPatches is the number of compiled patches,
+and Fails is the number of test failures.}
+\label{tbl:apache}
+\end{table}
+
+For our set of projects, we iterated through their commit
+logs, and generated reverse patches for each commit. For each patch thus
+created, we applied the patch on the latest repository, and removed any changes
+to the test directory, thus ensuring that the test suite we tested with was
+always the latest. Any patch that resulted in a compilation error was removed.
+This resulted in a set of patches for each project that could be independently
+applied. The complete test suite for the project was executed on each of the
+patches left, and any patch that did not result in a test failure was
+removed. The failed test cases that corresponded to each patch were thus
+collected. At this point, we had a set of patches that introduce specific test
+case failures.  The set of Apache projects, along with the set of reverse
+patches thus found, are given in Table~\ref{tbl:apache}.
+
+We conducted our remaining analysis in two parts. For the first part,
+we generated patch pairs by joining together two random patches for
+any given project. For the projects where the total number of unique pairs
+were larger than $100$, we randomly sampled $100$ of the pairs produced.
+After removing patch combinations that resulted in compilation errors, we had
+1,126 patch combinations.
+We evaluated the test suite of each project against the pair-patches thus
+generated, and collected the test cases which failed against these.
+\begin{table}
+\centering
+% latex table generated in R 3.2.3 by xtable 1.8-2 package
+% Wed Jul  6 14:44:12 2016
+\begin{tabular}{|l|r|}
+  \hline
+ & count \\ 
+  \hline
+All & 1,126 \\ 
+  Coupled & 1,126 \\ 
+  Subsuming &  56 \\ 
+  Strongly Subsuming &   2 \\ 
+  Strongly Subsuming and Coupled &   2 \\ 
+  Weakly Subsuming and Coupled &  54 \\ 
+  Weakly Subsuming and De-coupled &   0 \\ 
+  Non Subsuming and De-coupled &   0 \\ 
+  Non Subsuming and Coupled & 1,070 \\ 
+   \hline
+\end{tabular}
+
+\caption{Higher Order Mutant Statistics}
+\label{tbl:hom}
+\end{table}
+Adopting the terminology of Jia et al.~\cite{jia2009higher}, out of
+1,126, we had 1,126 coupled higher order
+mutants, and 56 subsuming mutants. Out of these,
+there were only 2 strongly subsuming mutants. The
+details are given in Table~\ref{tbl:hom}.
+
+We tried to reduce the number of external variables further for the second
+part, and chose a single large project --- \emph{Apache commons-math}.
+We generated a set of combined patches by joining 2, 4, 8, 16, 32, and 64
+patches at random, and evaluated the test suite for Apache commons-math against
+each of these combined $k^{th}$ order patches. We removed all patches that
+resulted in any compilation errors. This resulted in
+342 patch combinations.
+
+For both parts of our analysis, we generated two sets. The first set containing the unique
+failures from the constituent faults in isolation, and the second, containing
+failures from the joined patches.
+
+
+
+\section{Analysis}
+\label{sec:analysis}
+There are two questions that we tackle here. The first investigates the
+fraction of test cases that detect any of the constituent mutants that
+also detect the combined mutant. That is, evaluates the following prediction
+from the model:
+``Given two faults, and the test cases killing each, (assuming a sufficiently
+large \finput and \foutput, and ignoring the effects of strong interaction),
+there is a high probability for the same test cases to kill the combined
+fault.''
+
+The second investigates the general coupling effect. Note that general coupling
+effect does not distinguish between strong and weak interaction.
+Since the general coupling ratio does not distinguish between strong and weak
+interaction, this also serves as an evaluation of the strong interaction
+between faults where inputs other than the original $i$ and $j$ -- that is
+outside $i \cup j$ becomes faulty (where $i$ represents faulty inputs to $f$
+due to faults in $h$, and $j$ represents faulty inputs to $f$ due to faults in $g$).
+
+Indeed, we believe that strong interaction between different faults is
+rarer than weak interaction. While there is no easy way to verify it, one may look
+at the newer faults (new test failures) that are introduced by a combination of patches
+when compared to the original patches as instances of strong fault interaction
+(These are not the only instances, since some of the older tests could also
+be failing on new behaviors. Further, some of the instances where new tests are
+failing could also be due to too strict assertions failing only when multiple
+conditions are satisfied. However, it is a reasonable proxy).
+
+Our empirical evaluation does not require individual patches to be simple
+faults. Rather, we are investigating the probability of fault masking
+between \emph{any} two patches. Our theory suggests that irrespective of
+whether the faults are complex or not, we can expect the same fault masking
+probability.
+
+\subsection{All Projects}
+This section investigates fault pairs constructed from all projects.
+\subsubsection{The Composite Fault Model}
+Here, we try to answer the question: \emph{what percentage of test cases
+detecting constituent faults can detect the complex faults?}
+
+\begin{figure}[t]
+\centering\textbf{All Projects: \couplingC}\par\medskip
+
+
+{\centering \includegraphics[width=.99\linewidth]{../_R/figure/unnamed-chunk-4-1} 
+
+}
+
+
+\caption{The size of set of the test cases able to detect the faults when they were separate is in the \emph{x-axis},
+and the \emph{subset of the same test cases} able to detect the combined fault is in the \emph{y-axis}. Different projects
+are indicated by different colors.
+The two projects that have a slightly below the mean relation between X and Y axis from other projects are \emph{commons-io} and \emph{commons-beanutils}.}
+\label{fig:allfaults}
+\end{figure}
+
+Figure~\ref{fig:allfaults} plots the set of test cases able to detect
+the faults when they were separate with the set of test cases able to
+detect the combined fault.
+
+To analyze the fraction of test cases expected to detect the combined mutant,
+we evaluate the regression model given by:
+\begin{equation}
+\mu\{AfterT | BeforeT \} = \beta_0 + \beta_1 \times BeforeT
+\label{eq:e1}
+\end{equation}
+where $BeforeT$ is the size of the test suite that includes all test cases that
+can detect both faults separately, and $AfterT$ is the size of the test suite
+which is a subset of $BeforeT$ that can detect the fault pair when combined.
+We force $\beta_0$ to zero to account for the fact that if no test cases
+detected the original mutant, then the question of their fraction does not
+arise.
+This linear regression model lets us predict the number of test fails for
+combined faults from the test fails for separated faults.
+
+We note that we are interested in $\beta_1$ for another purpose. $\beta_1$ is
+also the \couplingC ratio $\kappa$. Thus this regression provides us with
+a model for prediction, its goodness of fit ($R^2$), and also the \couplingC ratio.
+
+\subsubsection{The General Coupling Model}
+%It is investigated using a sample of the population of real faults, and their combinations
+\begin{figure}[t]
+\centering\textbf{All Projects: general coupling}\par\medskip
+
+
+{\centering \includegraphics[width=.99\linewidth]{../_R/figure/unnamed-chunk-5-1} 
+
+}
+
+
+\caption{The size of the set of test cases able to detect
+  the faults when they were separate is the \emph{x-axis},
+  and the \emph{set of all test cases} able to detect the combined fault is in the \emph{y-axis}. Different projects
+are indicated by different colors.
+The three projects that have a slightly different relation between X and Y axis from other projects are \emph{commons-io} and \emph{commons-beanutils} (below the mean), and \emph{commons-dbcp} (above the mean).
+}
+\label{fig:allfaults1}
+\end{figure}
+Figure~\ref{fig:allfaults1} plots the general coupling of faults.
+To answer this question, we evaluate the following regression model.
+\begin{equation}
+\mu\{NewT | BeforeT \} = \beta_0 + \beta_1 \times BeforeT
+\label{eq:e2}
+\end{equation}
+where $BeforeT$ is the size of the test suite that includes all test cases that
+can detect both faults separately, and $NewT$ is the size of the test suite
+that can detect the fault pair when combined.
+Note that we do not set $\beta_0 = 0$ here as the combined fault pair may be
+detected by a new test case even if its constituents were not detected. In fact,
+$\beta_0$ represents the complex faults that became detectable due to
+interaction even though the constituent faults are not detectable.
+
+However, if one wishes to investigate the general coupling ratio, we have to
+investigate a simpler regression model, because the general coupling ratio does
+not permit an intercept.
+\begin{equation}
+\mu\{NewT | BeforeT \} = \beta_1 \times BeforeT
+\label{eq:e3}
+\end{equation}
+
+Here, similar to the previous section, $\beta_1$ corresponds to the general coupling ratio $C$.
+
+\subsubsection{Strong fault interaction}
+
+The incidence of strong fault interaction may be ascertained by the average number of new test
+cases that failed for the combined patch. Note that this number is not exhaustive, as some of
+the original test cases may fail for new faulty behavior too, even if the behavior is not same as that of the component faults.
+
+\subsection{Apache Commons-math}
+
+\subsubsection{The Composite Fault Model}
+We try to answer the question \emph{what percentage of test cases detecting constituent faults can detect the complex faults?} for Apache Commons-math.
+
+Figure~\ref{fig:mathfaults} plots the set of test cases able to detect
+the faults when they were separate with the set of test cases able to
+detect the combined fault. We rely on the regression given by Equation~\ref{eq:e1}
+to answer this question.
+
+
+\begin{figure}[t]
+\centering\textbf{Commons-math: \couplingC}\par\medskip
+
+
+{\centering \includegraphics[width=.99\linewidth]{../_R/figure/unnamed-chunk-6-1} 
+
+}
+
+
+\caption{The set of test cases able to detect the faults when they were separate is in the \emph{x-axis},
+  and the \emph{subset of the same test cases} able to detect the combined fault is in the \emph{y-axis}.
+The different number of patch combinations used are indicated by different colors.
+}
+\title{Commons-math: \couplingC}
+
+\label{fig:mathfaults}
+\end{figure}
+
+
+\subsubsection{The General Coupling Model}
+%semantic size of complex faults compared to their constituent faults?
+Figure~\ref{fig:mathfaults1} plots the general coupling of faults for \emph{Apache commons math}.
+We rely on the regressions given by Equation~\ref{eq:e2} and Equation~\ref{eq:e3} to answer this question.
+
+
+\begin{figure}[t]
+\centering\textbf{Commons-math: general coupling}\par\medskip
+
+
+{\centering \includegraphics[width=.99\linewidth]{../_R/figure/unnamed-chunk-7-1} 
+
+}
+
+
+\caption{The set of test cases able to detect the faults when they were separate is in the \emph{x-axis},
+  and the \emph{set of all test cases} able to detect the combined fault is in the \emph{y-axis}.
+  The different number of patch combinations used are indicated by different colors.
+}
+
+\label{fig:mathfaults1}
+\end{figure}
+
+\subsubsection{Strong fault interaction}
+
+The incidence of strong fault interaction may be ascertained by the average number of new test
+cases that failed for the combined patch. The difference of note here is that the number of patches are larger, and hence the chances of strong interaction are correspondingly larger.
+
+
+\section{Results}
+\label{sec:results}
+
+\subsection{All Projects}
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+% latex table generated in R 3.2.3 by xtable 1.8-2 package
+% Wed Jul  6 14:44:13 2016
+\begin{tabular}{|r|r|r|r|r|}
+  \hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+SeparateFaults & 0.9992 & 0.0005 & 2,116.13 & 0.0000 \\ 
+   \hline
+\end{tabular}
+
+}
+\caption{All projects regression for \kappaT. $R^2=$0.99975}
+\label{tbl:allfraction}
+\end{table}
+The results for regression for Equation~\ref{eq:e1} for all projects is
+given in Table~\ref{tbl:allfraction}.
+The correlation between the dependent
+and independent variable is 0.99975.
+The \couplingC ratio
+was found to be 0.99916.
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+% latex table generated in R 3.2.3 by xtable 1.8-2 package
+% Wed Jul  6 14:44:13 2016
+\begin{tabular}{|r|r|r|r|r|}
+  \hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+(Intercept) & -0.0399 & 0.0189 & -2.12 & 0.0343 \\ 
+  SeparateFaults & 0.9997 & 0.0005 & 1,847.83 & 0.0000 \\ 
+   \hline
+\end{tabular}
+
+}
+\caption{All projects regression. $R^2=$0.99967}
+\label{tbl:allsemantic}
+\end{table}
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+% latex table generated in R 3.2.3 by xtable 1.8-2 package
+% Wed Jul  6 14:44:13 2016
+\begin{tabular}{|r|r|r|r|r|}
+  \hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+SeparateFaults & 0.9993 & 0.0005 & 1,939.82 & 0.0000 \\ 
+   \hline
+\end{tabular}
+
+}
+\caption{All projects regression for general coupling ratio. $R^2=$0.9997}
+\label{tbl:xallsemantic}
+\end{table}
+The results for regression for Equation~\ref{eq:e2} for all projects is
+given in Table~\ref{tbl:allsemantic}.
+The correlation between the dependent
+and independent variable is 0.99967.
+The results for regression for Equation~\ref{eq:e3} for all projects is
+given in Table~\ref{tbl:xallsemantic}.
+The general coupling ratio
+was found to be 0.99931.
+Further, the mean number of faulty test cases that were not present in the
+component faults were found to be 0.0417.
+See Table~\ref{tbl:summaryall} for the summary.
+\begin{table}
+\centering
+\resizebox{0.9\linewidth}{!}{
+% latex table generated in R 3.2.3 by xtable 1.8-2 package
+% Wed Jul  6 14:44:13 2016
+\begin{tabular}{|r|r|r|r|r|}
+  \hline
+ & SeparateFaults & JoinedFaults & RemovedFaults & AddedFaults \\ 
+  \hline
+bcel & 27.73 & 27.73 & 0.00 & 0.00 \\ 
+  beanutils & 4.80 & 1.60 & 3.20 & 0.00 \\ 
+  cli & 7.60 & 7.60 & 0.00 & 0.00 \\ 
+  codec & 2.50 & 2.50 & 0.00 & 0.00 \\ 
+  collections & 16.49 & 16.49 & 0.00 & 0.00 \\ 
+  compress & 11.60 & 11.60 & 0.00 & 0.00 \\ 
+  configuration & 37.19 & 37.16 & 0.04 & 0.02 \\ 
+  csv & 2.00 & 2.00 & 0.00 & 0.00 \\ 
+  dbcp & 10.60 & 10.91 & 0.01 & 0.32 \\ 
+  exec & 16.50 & 16.50 & 0.00 & 0.00 \\ 
+  fileupload & 4.64 & 4.64 & 0.00 & 0.00 \\ 
+  imaging & 6.50 & 6.50 & 0.00 & 0.00 \\ 
+  io & 7.93 & 7.55 & 0.54 & 0.17 \\ 
+  jexl & 3.58 & 3.56 & 0.02 & 0.00 \\ 
+  jxpath & 3.00 & 3.00 & 0.00 & 0.00 \\ 
+  lang & 4.46 & 4.46 & 0.00 & 0.00 \\ 
+  mail & 2.30 & 2.30 & 0.00 & 0.00 \\ 
+  math & 7.67 & 7.64 & 0.03 & 0.00 \\ 
+  net & 4.13 & 4.13 & 0.00 & 0.00 \\ 
+  ognl & 27.00 & 27.00 & 0.00 & 0.00 \\ 
+  pool & 4.48 & 4.45 & 0.05 & 0.02 \\ 
+  scxml & 36.62 & 36.62 & 0.00 & 0.00 \\ 
+  validator & 3.07 & 3.06 & 0.01 & 0.00 \\ 
+   \hline
+\end{tabular}
+
+}
+\caption{Summary for all projects. The SeparateFaults column shows the number
+of faults when the patches were separately analyzed, and JoinedFaults column
+shows the number of faults when the patches were combined and analyzed.
+RemovedFaults indicate the number of faults from SeparateFaults that were
+removed in JoinedFaults, and AddedFaults indicate the number of newly added
+faults that were not in SeparateFaults.}
+\label{tbl:summaryall}
+\end{table}
+
+\subsection{Apache commons-math}
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+% latex table generated in R 3.2.3 by xtable 1.8-2 package
+% Wed Jul  6 14:44:13 2016
+\begin{tabular}{|r|r|r|r|r|}
+  \hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+SeparateFaults & 0.9896 & 0.0007 & 1,418.94 & 0.0000 \\ 
+   \hline
+\end{tabular}
+
+}
+\caption{Commons-math regression for \kappaT. $R^2=$0.99983}
+\label{tbl:mathfraction}
+\end{table}
+The results for regression for Equation~\ref{eq:e1} for all projects is
+given in Table~\ref{tbl:mathfraction}.
+The correlation between the dependent
+and independent variable is 0.99983.
+The \couplingC ratio
+was found to be 0.98956.
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+% latex table generated in R 3.2.3 by xtable 1.8-2 package
+% Wed Jul  6 14:44:13 2016
+\begin{tabular}{|r|r|r|r|r|}
+  \hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+(Intercept) & 0.0924 & 0.0482 & 1.92 & 0.0563 \\ 
+  SeparateFaults & 0.9933 & 0.0009 & 1,090.92 & 0.0000 \\ 
+   \hline
+\end{tabular}
+
+}
+\caption{Commons-math regression. $R^2=$0.99971}
+\label{tbl:mathsemantic}
+\end{table}
+\begin{table}
+\centering
+\resizebox{0.90\linewidth}{!}{
+% latex table generated in R 3.2.3 by xtable 1.8-2 package
+% Wed Jul  6 14:44:13 2016
+\begin{tabular}{|r|r|r|r|r|}
+  \hline
+ & Estimate & Std. Error & t value & Pr($>$$|$t$|$) \\ 
+  \hline
+SeparateFaults & 0.9944 & 0.0007 & 1,401.55 & 0.0000 \\ 
+   \hline
+\end{tabular}
+
+}
+\caption{Commons-math regression for general coupling ratio. $R^2=$0.99983}
+\label{tbl:xmathsemantic}
+\end{table}
+The results for regression for Equation~\ref{eq:e2} for commons-math is
+given in Table~\ref{tbl:mathsemantic}.
+The correlation between the dependent
+and independent variable is 0.99971.
+The results for regression for Equation~\ref{eq:e3} for commons-math is
+given in Table~\ref{tbl:xmathsemantic}.
+The general coupling ratio
+was found to be 0.9944.
+Further, the mean number of faulty test cases that were not present in the
+component faults were found to be 0.137.
+See Table~\ref{tbl:summarymath} for the summary.
+% The interesting thing here
+% is how the fault masking (RemovedFaults) and possible strong interaction
+% (AddedFaults) increase along with the increase in number of patches.
+
+\begin{table}
+\centering
+\resizebox{0.9\linewidth}{!}{
+% latex table generated in R 3.2.3 by xtable 1.8-2 package
+% Wed Jul  6 14:44:13 2016
+\begin{tabular}{|r|r|r|r|r|}
+  \hline
+ & SeparateFaults & JoinedFaults & RemovedFaults & AddedFaults \\ 
+  \hline
+2 & 7.67 & 7.64 & 0.03 & 0.00 \\ 
+  4 & 14.67 & 14.70 & 0.05 & 0.07 \\ 
+  8 & 30.53 & 30.42 & 0.17 & 0.06 \\ 
+  16 & 59.25 & 59.09 & 0.42 & 0.25 \\ 
+  32 & 109.85 & 108.96 & 1.37 & 0.48 \\ 
+  64 & 220.25 & 219.50 & 3.00 & 2.25 \\ 
+   \hline
+\end{tabular}
+
+}
+\caption{Summary for all Commons-math. The rownames indicate the number of
+  patches involved.
+  The SeparateFaults column shows the number
+of faults when the patches were separately analyzed, and JoinedFaults column
+shows the number of faults when the patches were combined and analyzed.
+RemovedFaults indicate the number of faults from SeparateFaults that were
+removed in JoinedFaults, and AddedFaults indicate the number of newly added
+faults that were not in SeparateFaults.}
+\label{tbl:summarymath}
+\end{table}
+
+
+
+\section{Discussion}
+\label{sec:discussion}
+
+Fault masking is one of the key concerns in software testing. The
+\emph{coupling effect} hypothesis asserts that fault masking is rare,
+and describes the general impact of interactions between
+faults. Unfortunately, very little is known about the theory behind
+fault coupling. We study the \emph{coupling effect} and fault masking
+using a theoretical model, and evaluate our findings empirically.
+
+Since the formal statement of \emph{coupling effect}
+is vague and ambiguous, we provide a more concrete
+definition (called the \efaultT to avoid confusion) ---
+\textit{\cHypothesis}
+
+We theoretically evaluate the \efaultT.
+Our analysis shows that for any pair of separable faults, the \couplingC
+effect exists. We find that \kappaT $\kappa = 1 - \frac{1}{n}$, where $n$
+is the \foutput of the function being considered. We also show that the
+consideration of the syntactical neighborhood does not have an adverse impact on
+our result. Further, according to Wah, as system size increases, and
+number of functions in the execution path nears the domain of function,
+the coupling effect weakens exponentially. However, our results suggest
+that the mean coupling ratio remains the same at $\frac{1}{n}$.
+
+Why is our prediction on fault masking so important? The reason is
+that basic testing relies on fault masking to a large extent. That is,
+say you are unit testing a function with multiple faults, and some of
+the faults are left undetected due to fault masking. Wah's analysis
+suggests that when we integrate the units to a larger system, the faults
+in larger system has a much larger (indeed exponential) tendency to self
+correct, and avoid failure due to masking. Our analysis suggests that
+even on larger systems composed of smaller systems, the rate of fault
+masking remains the same.
+
+We next empirically validated the \efaultT. Our subjects were numerous
+and this allows us to make a strong general claim about the composite
+coupling ratio $\kappa$, and also about the traditional coupling ratio $C$.
+
+We also proposed the existence of strongly interacting faults, which cannot
+be accounted for within the formal coupling theory. Our empirical analysis
+(see Table~\ref{tbl:summaryall} and Table~\ref{tbl:summarymath}) indicates
+that strong interaction is possibly rare, and is of similar frequency as
+that of fault masking.
+
+Examining Figure~\ref{fig:allfaults}, we note that while there is some
+reduction in the combined faults for the faults with smaller semantic footprint
+(as given by the number of test cases that failed for that fault) with respect
+to the constituent faults, the difference vanishes when the size of the fault
+increases. This same effect is also seen in Figure~\ref{fig:mathfaults}.
+% It might also be noticed that for two projects (these were \emph{commons-io}
+% and \emph{commons-beanutils}) very small constituent faults (with less than
+% 10 test case failures) failures from complex faults are somewhat smaller than
+% average, while for \emph{commons-dbcp}, the semantic size is slightly larger
+% than average.
+% (These were the only projects with statistically significant deviation in an anova).
+
+The results for regression Equation~\ref{eq:e1} from all projects, and Apache
+commons-math also suggests a similar observation --- that the test cases that
+are able to detect a fault in isolation will with very high probability detect
+the same fault when in combination with other faults.
+
+A counter-intuitive result is suggested by the regression
+(Equation~\ref{eq:e3}) comparing the semantic sizes of constituent faults and
+combined faults. Table~\ref{tbl:xallsemantic} and Table~\ref{tbl:xmathsemantic}
+suggests that the coefficient for $SeparateFaults$ is less than unity, which
+means that when separate, the faults have a slightly larger semantic footprint
+than when combined --- possibly due to fault interactions. However, we note that
+the effect is not statistically significant for all projects. The coefficient
+for separate faults for Table~\ref{tbl:xallsemantic} lies between
+\{0.99831.0003\}, and the
+coefficient for separate faults for Table~\ref{tbl:xmathsemantic} lies between
+\{0.993000.99579\} --- 95\% confidence
+interval, $p < 0.0001$.
+
+Overall, our statistical analysis suggests that there is a very high
+probability (between
+\{0.998241.00009\} for all projects, and
+\{0.988180.99093\} for math ---
+95\% confidence interval with statistical significance $p < 0.0001$) that when
+two faults are paired to produce a combined fault, any test cases that detected
+either of the faults continue to detect the combined fault.
+
+% Finally, we have already shown~\cite{gopinath2015howhard} that we can use
+% sampling to approximate the mean of the entire population of faults.
+Our results for Table~\ref{tbl:xallsemantic} suggests that between
+\{0.99831.0003\} of complex
+faults are caught (95\% confidence interval, $p < 0.0001$).
+This is again confirmed by the deeper analysis of
+\emph{Apache commons-math}, using larger size faults in Table~\ref{tbl:xmathsemantic}
+which suggests that between
+\{0.993000.99579\} fraction of complex
+faults are caught (95\% confidence interval, $p < 0.0001$).
+We note that this is the first confirmation of the \emph{general coupling effect}
+(unlike the \emph{mutation coupling effect} which has been validated multiple times).
+Why is validating general coupling effect important? We already know that faults
+emulated by traditional mutants are only a subset of possible kinds of faults
+(Just et al.~\cite{just2014mutants} found that up to 27\% of faults were inadequately
+represented by mutants). Hence, it is important to verify \emph{general coupling
+effect} using real faults so that our results are applicable for faults in
+general, and especially for possible future mutation operators. Indeed,
+the \emph{mutation coupling effect} has been
+validated multiple times, and we do not attempt it again here.
+
+How much difference is there between the traditional general coupling ratio $C$ and
+the \kappaT $\kappa$? Our analysis finds that in general, there is less than a percentage
+drop for the \kappaT from the traditional coupling ratio.
+
+
+There is another point that is of interest in our study. Research in software
+reliability, and software testing often relies on curated sets of
+faults~\cite{just2014mutants,demillo1991on} that took manual effort to produce.
+The paucity of such fault databases has held back research in software testing
+to some extent. This also means that there is a high chance of skew either due to
+manual bias, or due to skew in the projects thus selected.
+Our technique is entirely automated. When a representative set of code
+repositories are available, our methodology can be used to produce faults with
+relatively less skew from external variables.
+
+
+
+%External validity: Our formulation has been validated only using unit test
+%suites. There exist a chance that system tests may have different behavior.
+
+\section{Threats to Validity}
+\label{sec:threats}
+
+While we have taken every care to ensure that our results are unbiased, and
+have tried to eliminate the effects of random noise, our results are subject
+to the following threats to validity.
+
+\subsection{Threats to Theoretical Analysis}
+Our theoretical analysis relies on a main assumption, that all the faults of
+a function have an equal probability of being chosen. We discussed the
+effect of syntax on our model in Section~\ref{sec:theory}, where we noted
+that syntax should not have a large impact so long as its impact is similar
+across functions with expected output, and functions which do not have the
+expected output. While there does not seem to be any reason to suspect
+otherwise, and the results of empirical analysis seem to bear out our
+theoretical result, there exists a possibility that this assumption is
+unwarranted in general, or may depend on the particular program being
+considered.
+
+A second assumption that we made in the theoretical analysis is that the
+\foutput of function being considered is large. To indicate the impact of
+this assumption, for a function with binary \foutput (only true, and false are
+allowed as output), there is $50\%$ chance of masking, and hence only 50\%
+chance of coupling. However, the situation changes proportionally with
+larger \foutput, with faults in a function with a possibility of output of even
+$100$ unique values have $99\%$ chance of coupling. Hence,
+we believe that the assumption of large \foutput is warranted on average.
+
+Our theoretical analysis is incomplete for cases of more complex execution
+paths where there may be cases where the solved templates for recursion and
+iteration may not apply. This may also have an impact on the actual fault
+masking for specific programs that do not fit into these templates.
+
+Finally, we assumed that programs corresponded to mathematical functions when
+taking that there were $n^m$ alternatives to a program $h \in : M \rightarrow N $.
+However, in real world, syntax plays a much larger role, and there are
+an infinite number of equivalent programs with exactly the same \finput and
+\foutput.
+
+We note that our empirical analysis does not verify the major difference
+that we suggested from Wah's analysis --- that coupling effect does not weaken
+with system size. This is not taken up here due to the significant investment
+in finding and testing systems that are large enough. This is an avenue for
+future work.
+
+\subsection{Threats to Empirical Analysis}
+
+\noindent\textbf{Threats due to sampling bias:} To ensure that our results were
+representative of real world programs, with non-trivial faults, we opted for
+Java projects from the Apache commons library. We used all projects
+that we could build and complete testing. Further, we used all patches that
+could be applied in isolation and resulted in a valid build, with at least
+one test failure, which indicated that the patch fixed something in the
+project. This however, implies that our sample of programs could be biased by
+any factor that skews the kind of projects that the Apache community works on,
+or their development practices. The representativeness of our sample patches
+are also impacted by any factor that may skew the independent patches that
+we extracted.
+
+\noindent\textbf{Projects of differing maturity, and quality:} Since we used
+real world projects from the Apache commons library, the maturity and quality
+of these projects is representative of the real world.
+However, not all projects have been in development for a long time, and hence
+have a different distribution of faults from what is typically expected in an
+industrial setting with a high standard of quality. To counter this threat
+we evaluated Apache commons-math --- the largest, most mature, and highest
+quality project which had 90\% statement coverage and 73.2\% mutation score for
+our analysis for the second part. The results from Apache commons-math seem to
+indicate that our experiment is relatively unbiased in this direction.
+
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+The \emph{coupling effect} hypothesis is a general theory of fault interaction,
+and is used to quantify \emph{fault masking}. It also finds use in mutation
+analysis. While there is interesting empirical evidence for the
+\emph{coupling effect}, theoretical understanding is lacking. The extant theory
+by Wah is too restrictive to be useful for real world systems.
+We correct this limitation, and provide a stronger, modified version of
+the theory called the \efaultT.
+
+We provide a theory of fault coupling applicable to general
+functions (with some restrictions). It incorporates the syntactical neighborhood
+and clarify assumptions made. We show that even under real world conditions,
+the \efaultT holds.
+
+Our theoretical analysis suggests that the \faultT has
+a high probability of occurring ($1 - \frac{1}{n}$, where $n$ is the \foutput
+of the function under consideration) under the assumptions of total functions,
+finite \finput, and separability of faults, \emph{irrespective of the size of
+the system}.
+
+Our empirical study provides validation, and an empirical approximation of
+the \couplingC ratio
+$\kappa$ (0.99), with 99\% of the test cases that detected a fault in
+isolation continuing to detect it when it is combined with other faults.
+
+Finally, the \emph{general coupling effect} has never been demonstrated for
+real faults. Our empirical analysis also provides firm evidence in favor of the
+\emph{general coupling effect} ($C = 99\%$) for real faults.
+
+
+%\appendix
+%\section{Appendix}
+%<<lcacl, child='lambda-calc.Rnw'>>=
+%@
+
+%<<lcacl, child='combinatory-logic.Rnw'>>=
+%@
+% This is the text of the appendix, if you need one.
+
+% \acks
+
+% Acknowledgments, if needed.
+
+% % We recommend abbrvnat bibliography style.
+
+% \bibliographystyle{abbrvnat}
+
+% % The bibliography should be embedded for final submission.
+
+% \begin{thebibliography}{}
+%     \softraggedright
+
+%   \bibitem[Smith et~al.(2009)Smith, Jones]{smith02}
+%     P. Q. Smith, and X. Y. Jones. ...reference text...
+
+% \end{thebibliography}
+%\balance
+\bibliographystyle{acm}
+\bibliography{paper}
+\end{document}

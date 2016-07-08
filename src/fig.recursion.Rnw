@@ -1,0 +1,14 @@
+\begin{figure}
+\centering
+\begin{tikzpicture}
+\draw[-|,blue] (0,-1.5) -- (3.5,-1.5) node[pos=.5,sloped,above] {$\frac{1}{n}$} node[pos=-.1,sloped]{$i_0$};
+\draw[-|,red,dotted] (0,-1.5) circle (2pt) -- (3.5,-3) node[pos=.5,sloped,below] {$\frac{n-1}{n}$};
+\draw[|-|,blue] (3.5,-1.5) -- (7,-1.5) node[pos=.2,sloped,above] {$\frac{1}{n}\times \frac{1}{n}$} node[pos=1.2]{$\frac{1}{n}$};
+\draw[|-|,red,dotted] (3.5,-1.5) -- (7,-3) node[pos=.4,sloped,above] {$\frac{n-1}{n}\times \frac{1}{n}$} node[pos=1.2]{};
+
+\draw[|-|,red,dotted] (3.5,-3) -- (7,-3) node[pos=.5,sloped,above] {$\frac{n-1}{n}\times\frac{n-1}{n}$} node[pos=1.2]{$\frac{n-1}{n}$};
+\draw[|-|,blue] (3.5,-3) -- (7,-1.5) node[pos=.2,sloped,above] {$\frac{1}{n} \times \frac{n-1}{n}$} node[pos=1.2]{};
+\end{tikzpicture}
+\caption{Recursive interaction. The \emph{blue solid} lines represent the masking values where the values are same as what would be expected before the fault was introduced, and the \emph{red dotted} lines represent values that are different from the non-faulty version so that faults could be detected.}
+\label{fig:recursion}
+\end{figure}

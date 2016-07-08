@@ -1,0 +1,94 @@
+\begin{figure}
+\begin{tikzpicture}
+\node[text width=3cm] at (1,1) {$h \circ g$};
+\node[text width=3cm] at (0.5,-1) {$g$};
+\node[text width=3cm] at (0.5,-3) {$h$};
+
+\draw (0,0) circle [x radius=1.4cm, y radius=6mm];
+\draw (0,-2) circle [x radius=1.2cm, y radius=5mm];
+\draw (0,-4) circle [x radius=1cm, y radius=4mm];
+
+\draw[-,blue] (0,0) circle (1pt) -- (0,-2) circle (1pt) node[pos=.5,above] {} node[pos=-.1]{a};
+\draw[-,blue] (0,-2) circle (1pt) -- (-0,-4) circle (1pt) node[pos=1.5,below] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (-.3,0)  circle (1pt) -- (-0.3,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{b};
+\draw[-,blue] (-0.3,-2)  circle (1pt) -- (-0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (-.6,0)  circle (1pt) -- (-0.5,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{c};
+\draw[-,blue] (-0.5,-2)  circle (1pt) -- (-0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (-.9,0)  circle (1pt) -- (-0.7,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{d};
+\draw[-,blue] (-0.7,-2)  circle (1pt) -- (-0.6,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (.3,0)  circle (1pt) -- (0.2,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{e};
+\draw[-,blue] (0.2,-2)  circle (1pt) -- (0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (.6,0)  circle (1pt) -- (0.4,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{f};
+\draw[-,blue] (0.4,-2)  circle (1pt) -- (0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (.9,0)  circle (1pt) -- (0.6,-2) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{g};
+\draw[-,blue] (0.6,-2)  circle (1pt) -- (0.6,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\node[text width=3cm] at (2 + 1,-1) {$g'$};
+\node[text width=3cm] at (2 + 1,-3) {$h'$};
+%---------------------
+\draw (3 + 0,0) circle [x radius=1.4cm, y radius=6mm];
+\draw (3 + 0,-1.5) circle [x radius=1.2cm, y radius=3mm];
+\draw (3 + 0,-2.5) circle [x radius=1.2cm, y radius=3mm];
+\draw (3 + 0,-4) circle [x radius=1cm, y radius=4mm];
+
+\draw[-,blue] (3 + 0,0) circle (1pt) -- (3 + 0,-2 + 0.5) circle (1pt) node[pos=.5,above] {} node[pos=-.1]{a};
+\draw[-,red] (3 + 0,-2-0.5) circle (1pt) -- (3 + 0.2,-4) circle (1pt) node[pos=1.5,below] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (3 + -.3,0)  circle (1pt) -- (3 + -0.3,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{b};
+\draw[-,blue] (3 + -0.3,-2-0.5)  circle (1pt) -- (3 + -0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (3 + -.6,0)  circle (1pt) -- (3 + -0.5,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{c};
+\draw[-,blue] (3 + -0.5,-2-0.5)  circle (1pt) -- (3 + -0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,red] (3 + -.9,0)  circle (1pt) -- (3 + -0.3,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{d};
+\draw[-,blue] (3 + -0.7,-2-0.5)  circle (1pt) -- (3 + -0.6,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,red] (3 + .3,0)  circle (1pt) -- (3 + 0.6,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{e};
+\draw[-,blue] (3 + 0.2,-2-0.5)  circle (1pt) -- (3 + 0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (3 + .6,0)  circle (1pt) -- (3 + 0.4,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{f};
+\draw[-,blue] (3 + 0.4,-2-0.5)  circle (1pt) -- (3 + 0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (3 + .9,0)  circle (1pt) -- (3 + 0.6,-2 + 0.5) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{g};
+\draw[-,red] (3 + 0.6,-2-0.5)  circle (1pt) -- (3 + 0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+%---------------------
+\node[text width=3cm] at (7,1) {$h' \circ g'$};
+\draw (6 + 0,0) circle [x radius=1.4cm, y radius=6mm];
+\draw (6 + 0,-2) circle [x radius=1.2cm, y radius=3mm];
+\draw (6 + 0,-4) circle [x radius=1cm, y radius=4mm];
+
+\draw[-,red,dashed] (6 + 0,0) circle (1pt) -- (6 + 0,-2 ) circle (1pt) node[pos=.5,above] {} node[pos=-.1]{a};
+\draw[-,red] (6 + 0,-2) circle (1pt) -- (6 + 0.2,-4) circle (1pt) node[pos=1.5,below] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (6 + -.3,0)  circle (1pt) -- (6 + -0.3,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{b};
+\draw[-,blue] (6 + -0.3,-2)  circle (1pt) -- (6 + -0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (6 + -.6,0)  circle (1pt) -- (6 + -0.5,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{c};
+\draw[-,blue] (6 + -0.5,-2)  circle (1pt) -- (6 + -0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,red] (6 + -.9,0)  circle (1pt) -- (6 + -0.3,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{d};
+\draw[-,blue,dotted] (6 + -0.7,-2)  circle (1pt) -- (6 + -0.6,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,red,dotted] (6 + .3,0)  circle (1pt) -- (6 + 0.6,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{e};
+\draw[-,blue,dotted] (6 + 0.2,-2)  circle (1pt) -- (6 + 0.2,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,blue] (6 + .6,0)  circle (1pt) -- (6 + 0.4,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{f};
+\draw[-,blue] (6 + 0.4,-2)  circle (1pt) -- (6 + 0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+\draw[-,red,dashed] (6 + .9,0)  circle (1pt) -- (6 + 0.6,-2 ) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-.1]{g};
+\draw[-,red] (6 + 0.6,-2)  circle (1pt) -- (6 + 0.4,-4) circle (1pt) node[pos=.5,sloped,above] {} node[pos=-1.1,yshift=-6mm,near end]{};
+
+
+\end{tikzpicture}
+\caption{Weak fault interaction: The first function \emph{g} is faulty at inputs \emph{d} and \emph{e}, while second function \emph{h} is faulty at inputs \emph{a} and \emph{g}. Hence, we expect \emph{d, e, a, g} to produce faulty outputs for the combined function \emph{$h' \circ g'$} if only weak interaction is considered. The input \emph{e} has a possibility of being masked by the fault at \emph{g} in the second function \emph{h}.}
+\label{fig:rep}
+\end{figure}
+
+

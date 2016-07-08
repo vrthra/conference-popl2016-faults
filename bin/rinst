@@ -1,0 +1,12 @@
+#!/usr/bin/env Rscript
+args = commandArgs(trailingOnly=TRUE);
+for (i in args) {
+  if (!suppressWarnings(suppressPackageStartupMessages(require(i, character.only=T, quietly=T)))) {
+    install.packages(i, repos="http://cran.us.r-project.org");
+    library(i, character.only=T);
+    print(paste0(i, " is installed."));
+  } else {
+    library(i, character.only=T);
+    print(paste0(i, " is already installed."));
+  }
+}

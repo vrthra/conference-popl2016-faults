@@ -1,0 +1,17 @@
+Prior to the registration deadline, the authors will register their paper by uploading information on the submission title, abstract (of at most 300 words), authors, topics, and conflicts to the conference web site. Papers that are not registered on time will be rejected.
+
+Prior to the final paper submission deadline, the authors will upload their full paper in double blind format and formatted according to the ACM proceedings format. Each paper should have no more than 12 pages of text, excluding bibliography, in at least 9 pt format. Papers may be resubmitted multiple times up until the deadline. The last version submitted before the deadline will be the version that is reviewed. Papers that exceed the length requirement or deviate from the expected format or are submitted late will be rejected. All deadlines are firm.
+
+We encourage authors to provide any supplementary material that is required to support the claims made in the paper, such as detailed proofs, proof scripts, or experimental data. These materials should be uploaded at submission time, as a single pdf or a tarball, not via a URL. It will be made available to reviewers only after they have submitted their first-draft reviews and hence need not be anonymized. Reviewers are under no obligation to look at the supplementary material but may refer to it if they have questions about the material in the body of the paper.
+
+Templates for ACM format are available for Microsoft Word and LaTeX at http://www.sigplan.org/Resources/Author (use the 9 pt preprint template). Submissions should be in PDF and printable on US Letter and A4 sized paper.
+
+Submitted papers must adhere to the SIGPLAN Republication Policy and the ACM Policy on Plagiarism. Concurrent submissions to other conferences, workshops, journals, or similar forums of publication are not allowed.
+
+POPL 2017 will employ a lightweight double-blind reviewing process. To facilitate this, submitted papers must adhere to two rules:
+
+author names and institutions must be omitted, and
+references to authors’ own related work should be in the third person (e.g., not “We build on our previous work …” but rather “We build on the work of …”).
+The purpose of this process is to help the PC and external reviewers come to an initial judgement about the paper without bias, not to make it impossible for them to discover the authors if they were to try. Nothing should be done in the name of anonymity that weakens the submission or makes the job of reviewing the paper more difficult (e.g., important background references should not be omitted or anonymized). In addition, authors should feel free to disseminate their ideas or draft versions of their paper as they normally would. For instance, authors may post drafts of their papers on the web or give talks on their research ideas. David Walker has put together a document answering frequently asked questions that should address many common concerns.
+
+

@@ -1,0 +1,41 @@
+\begin{abstract}
+
+Fault masking is an important problem in software testing, where the
+effect of one fault serves to mask that of another fault for particular
+test inputs.
+The \emph{coupling effect} is relied upon by testing practitioners to
+ensure that fault masking is rare.
+It states that \emph{\oHypothesis}.
+
+While this effect has been empirically evaluated, our theoretical
+understanding of \thece is as yet incomplete.
+Wah proposed a theory of \thece on finite bijective (or near bijective)
+functions with the same \finput and \foutput, and assuming uniform distribution
+for candidate functions. This model however, was criticized as being too
+simple to model real systems, as it did not account for differing \finput and
+\foutput in real programs,
+% the impact of recursion and iteration,
+or for syntactic neighborhood (it assumed all faults equally likely).
+
+We propose a new theory of fault coupling that is applicable in the realm of
+general functions (with certain constraints). We show that there are two kinds
+of fault interactions, of which only the weak interaction can be modeled by
+the theory of \thece. The strong interaction can produce faults that
+are semantically different from the original faults. These faults should
+hence be considered as independent atomic faults.
+Our analysis show that the theory
+holds even when the effect of syntactical neighborhood of the program is
+considered.
+
+We also propose a modified hypothesis that is stronger than the traditional
+definition --- the \emph{\faultT}:
+
+\textit{\cHypothesis}
+
+We analyze numerous real-world programs with real faults to validate
+and empirically approximate the \emph{composite coupling ratio} $\kappa$.
+We find that $\kappa$ is approximately $99\%$ with
+95\% confidence, and very close to the general coupling ratio $C$
+which was also found to be greater than $99\%$ with 95\% confidence.
+
+\end{abstract}

@@ -1,0 +1,244 @@
+\section{Introduction}
+
+\emph{Fault masking} occurs when interactions between component faults in
+a complex fault result in expected (non-faulty) values being produced for
+particular test inputs. This can result in faults being missed by test cases,
+even though the complex fault may produce faulty outputs for other values, hence
+negatively impacting the testability of a software system.
+It can also lead to undeserved overconfidence in the reliability of a software
+system.
+%Fault masking also negatively impacts the testability of a software
+%system, making bugs hard to find.
+
+The \emph{coupling effect}~\cite{demillo1978hints} hypothesis studies the
+semiotics\footnote{The relation between syntax and semantics of faults.} of fault masking. It asserts that
+\emph{``complex faults are coupled to simple faults in such a way that a test
+data set that detects \textbf{all simple faults in a program} will detect a
+high percentage of the complex faults.''}~\cite{offutt1992investigations,offutt1989thecoupling, jia2011analysis}.
+
+This is relied upon by software testers to assert that fault masking is indeed
+rare. Further, Mutation analysis~\cite{lipton1971fault,budd1979mutation}, the
+premier technique for evaluating test suite quality relies on the \emph{coupling
+effect} to assert that detecting simple faults is sufficient to guarantee the
+quality of a test suite against more complex faults.
+
+However, our understanding of the \emph{coupling effect} is woefully
+inadequate. We do not know when, and how often fault coupling can happen,
+whether multiple faults will always result in fault coupling, and the effect of
+increase in number of faults in the number of faults masked.
+
+Further, the formal statement of coupling effect itself is ambiguous and
+inadequate as it covers only the case where all simple faults have been found.
+Even worse, it has no unambiguous definition of what a simple (or atomic) fault
+is. We propose a stronger version of the \emph{coupling effect}
+(called the \efaultT to avoid confusion):
+
+\eFaultT{}:
+\textit{
+  \cHypothesis
+}
+
+% With a corresponding change in mutation analysis to exhaustively generate all
+% atomic faults (rather than simple faults), \efaultT can be used in an inductive
+% argument to assert the validity of mutation analysis.
+
+We investigate our hypothesis both theoretically and empirically. We describe
+how faults interact, categorize fault interaction to weak and strong
+interaction, and provide an unambiguous description of atomic faults. We further
+validate our findings using real faults from numerous software systems.
+The terms used in this paper are given in Note~\ref{box:terms}.
+
+<<terms, child='terms.Rnw'>>=
+@
+\subsection{Theory}
+
+Theoretical aspects of \thece 
+%  for logical faults was investigated by Kapoor~\cite{kapoor2006formal}, and
+on functions was investigated by Wah et al.~\cite{wah1995fault,wah2000atheoretical,wah2003ananalysis}. Wah
+assumes that any software is built by composition of \emph{q} independent functions, with
+a few restrictions. This model is called the standard \qfunction model.
+The \qfunctions have the following restrictions:
+\begin{itemize}
+  \item Functions have the same \finput and \emph{range} (order \emph{n}) so that any two
+    functions can be composed together, and the functions are \emph{bijective} (one-to-one).
+    The non-\emph{bijective} functions are modeled as \emph{degenerate} functions which
+    are close to \emph{bijective}, but with a few duplicate inputs that map to
+    same location in image.
+  \item A program with two faults can be split into two programs, with one program
+    containing one fault, and the other program the other\footnote{
+      This was assumed by Wah to be true for general functions. However, we
+      show in Section~\ref{sec:theory} that it is not applicable to
+      all functions.
+    }.
+  \item All applicable functions have an equal probability of being chosen as a faulty
+       representation of another (ignoring the
+       syntactical neighborhood of a function) -- the \emph{democratic assumption}.
+  \item The number of functions considered \emph{q} is much smaller than the size of the domain. That is, $q \ll n$.
+     Wah suggests that as $q$ nears $n$, \thece weakens.
+\end{itemize}
+Wah showed that for \emph{q} functions, the survival ratio of first and second
+order test sets are $\frac{1}{n}$ and $\frac{1}{n^2}$ respectively,  where $n$ is
+the order of the \finput. %~\cite{jia2011analysis}.
+Further, Wah makes a general observation, and a heuristic, that the survival
+ratio of a multi-fault alternate is $\frac{p+1}{n}$ if there are $p$ fault free
+functions left over after the last faulty function. This allows Wah to solve the
+\qfunction model since there are $2^{p-1}-1$ multi fault alternates with last
+faulty function at $p$. Hence, the expected number of survivors for a \qfunction
+composition is given by:
+\[
+  \frac{1}{n^r} \sum_{p=1}^{q} (2^{p-1} -1) (q - p + 1)^r
+\]
+for test sets of order $r$, \qfunctions, and $n$ being the order of the domain.
+
+Wah's analysis, however, lacks wider applicability due to the constraints
+it placed on functions. Functions in typical programs vary widely in their \finput
+and \foutput. Second, the assumption that the distribution of mathematical functions
+can represent the distribution of programs with same \finput and \foutput
+is rather strong because there can be an infinite number of alternative programs
+that represent the same mathematical function.
+Third, the assumption that all applicable functions are equally
+probable as faulty representation of a function ignores the
+impact of syntactical neighborhood --- functions that are in the same
+syntactical neighborhood (those functions that can be reached by a small
+modification of the original function) are more probable as faulty replacements
+than others further away. That is, it is possible that a \emph{quick sort}
+implementation can have a small bug, resulting in an incorrect sort. However,
+it is quite improbable that it is replaced by an algorithm for --- say ---
+\emph{random shuffle}, which has
+the same \finput and \foutput as that of a sorting function.  While
+syntactical nearness does not completely capture semantic nearness, it
+is closer than assuming any function is a plausible fault for any
+other function.
+
+Next, Wah assumed that all complex faults can be semantically
+separated into component faults with the component faults appearing in independent
+functions. However, as we show in
+Section~\ref{sec:theory}, this assumption is valid only in certain cases.
+Further, Wah's analysis does not account for recursion and iteration.
+Finally, Wah's analysis suggested that
+the survival ratio of mutants is dependent on the \emph{domain} of the
+function. However, this result was due to the assumption that both \emph{domain}
+and \emph{range} of the functions examined were similar. We show that the
+survival ratio of a mutant is actually dependent on the \foutput of the function
+examined, when \finput and \foutput are different (we note that the size of \foutput is
+bounded by the size of \finput of the function).
+
+We propose a simpler theory of fault coupling that uses a similar model to Wah's,
+but with relaxed constraints. Our
+analysis incorporates functions with differing \finput and \foutput. We clarify
+the semantic separability of complex faults, and show how it affects the
+coupling effect.
+More importantly, we show that certain common classes of complex faults may not
+be semantically separable.
+This provides us with a definition of an \emph{atomic fault}; a fault that
+cannot be semantically separated into simpler faults. This is important because
+two faults that may be lexically separate but inseparable can be expected to
+produce a different behavior than either fault considered independently.
+Further, we consider the impact of syntactic neighborhood. Using both case
+analysis and statistical argument, we show that our
+analysis remains valid even when the syntactic neighborhood is considered.
+
+\subsection{Empirical Validation}
+
+The first empirical study of \thece was conducted by Lipton et al.~\cite{lipton1978the,demillo1978hints}.
+They used a sample of $22,000$ mutants for the program \emph{find} up to the fourth order, and
+observed that test cases for first order mutants were adequate for samples up
+to fourth order.  More empirical evidence for \thece was supplied by
+Offutt~\cite{offutt1992investigations,offutt1989thecoupling} using two more
+programs, \emph{mid} and \emph{tryp}. They observed that the tests for first
+order mutants were sufficient to kill up to 99\% of all $2^{nd}$ order mutants, and
+99\% of $3^{rd}$ order mutants sampled.
+
+The validity of mutation analysis itself --- that mutations are coupled to
+real faults --- has been demonstrated many times in the past.
+DeMillo et al.~\cite{demillo1991on} showed that \TeX{} errors could be coupled to
+simple mutants, and Daran et al.~\cite{daran1996software} found that 85\% of
+error traces produced by mutants were similar to those produced by real faults.
+Andrews et al.~\cite{andrews2005mutation,andrews2006using},
+found that faults generated by mutation analysis are similar in detectability
+to real world faults (in contrast to hand seeded
+faults). Do et al.~\cite{do2006on} showed that using mutation faults for test
+prioritization results in higher detection rates than using hand seeded faults.
+Comparing four adequacy
+criteria --- mutation, edge pair, all uses, and prime path ---
+Li et al.~\cite{li2009experimental} showed that
+mutation adequate testing could detect hand seeded faults better (85\%)
+than other criteria (65\%).
+Finally, Just et al.~\cite{just2014mutants} empirically showed that the
+effectiveness of a test suite in detecting mutants mirrors its ability to
+detect real faults, and that 73\% of real faults were coupled to mutants.
+
+We note that, as Offutt suggests~\cite{offutt1992investigations,offutt1989thecoupling},
+there are two distinct definitions of coupling involved. The
+\emph{general coupling effect} suggests that simple faults are coupled to more
+complex faults such that test data adequate for simple faults will be able to
+kill a majority of more complex faults. The \emph{mutation coupling effect}
+states that test data adequate for simple first order mutants will be able to
+detect a majority of more complex mutants. While the \emph{mutation
+coupling effect} has been demonstrated, the \emph{general coupling
+effect} has not been empirically validated yet.
+
+Our empirical analysis aims to accomplish the following: First, we
+empirically evaluate the \couplingC ratio $\kappa$ for numerous real-world projects.
+This gives us confidence in the assumptions made in the theoretical analysis,
+and serves to validate the \efaultT. Second, we empirically
+evaluate the general coupling effect for faults, and compute the traditional coupling ratio $C$.
+
+What is the relation between the \couplingC ratio $\kappa$ and the traditional coupling ratio $C$?
+We can regard the \kappaT as a lower limit of the traditional
+coupling ratio. As we explain further, the general coupling ratio does not
+discount the effect of strong fault interactions, which can produce
+complex faults semantically independent from the constituent faults.
+% That is, the combined faults are sometimes detected by test cases other
+% than the original test cases that detected the constituent
+% faults.
+Hence, $C$ is not bounded by any number, and will often be larger than
+$\kappa$, which will be strictly less than one.
+\\
+
+\noindent\textbf{Contributions:}
+%The contributions of this paper are:
+\begin{itemize}
+\item We propose the \efaultT that resolves vagueness and ambiguity in the
+  formal statement of \thece when dealing with non-adequate mutation scores.
+\item Our theoretical analysis results in the \efaultT for
+  general functions. We find the \couplingC ratio to be $1-\frac{1}{n}$,
+  where $n$ is the \foutput of function considered.
+\item We show that our analysis remains valid even when considering recursion
+  and loops --- common features in programs.
+\item We provide empirical validation for the \efaultT. Using \Sexpr{nrow(subjects)} projects, we compute the
+  \couplingC ratio $\kappa$ to be greater than $0.99$, with $95\%$ confidence.
+  This helps substantiate the impact of \couplingC.
+\item We provide the first empirical validation of the \emph{general coupling
+  effect}, which states that simple faults and more complex faults are
+coupled.
+\end{itemize}
+
+\begin{comment}
+The \efaultT also has an immediate application. We
+have shown previously~\cite{gopinath2015howhard} how sampling can be used to
+determine to any required precision whether a given mutant is equivalent or
+not. However, the suggested method of evaluating each possibly equivalent
+mutant for the full input \finput is still computationally expensive. We suggest
+that all possible equivalent mutants for a particular function be combined into
+a complex mutant, and evaluated on the input \finput first. If it passes all
+given tests, we take all the individual mutations to be equivalent\footnote{It is
+possible that they are not. However, the variants~\cite{gopinath2016measuring} produced are likely to
+be very similar --- it is a compromise between accuracy and speed.}. If it
+fails, split the changes equally to two parts, and recurse. Any time a set of
+mutations do not fail for the given test data, the constituent mutations can be
+eliminated as possibly equivalent. If a complex mutant is detected, we recurse on its
+two halves until we reach the leaves. Since this is a binary tree, the worst
+performance may happen when there are at least 50\% non-equivalent mutants,
+where we may have to evaluate up to $2\times n$ mutants where $n$ is the total number
+of mutants we need to check for equivalence.
+
+Note that we only sample the higher order faults for validation. However, as
+we showed previously~\cite{gopinath2015howhard}, sampling is a reasonable
+approach as far as mutation analysis is concerned.
+\end{comment}
+
+Our full data set is available for replication\footnote{
+  blinded for review.
+%\url{http://eecs.osuosl.org/rahul/fse2016/}
+}.

@@ -1,0 +1,24 @@
+\begin{infobox}
+\noindent\emph{(Semantic) Separability of faults}: Two faults present in a function are said to be separable \emph{if and only if} the smallest possible chunk containing both faults can be decomposed into two functions $g$ and $h$ such that each fault is isolated within a single function (providing $g_a$ and $h_b$ as faulty functions), the behavior of composition $h \circ g$ equals the behavior of the original chunk in terms of input and output , and composition $h_b \circ g_a$ equals the behavior of the chunk with both faults. \\
+\noindent\emph{Simple fault}: A fault that cannot be \emph{lexically} separated into other independent smaller faults. Also called a \emph{first order} fault. \\
+\noindent\emph{Complex fault}: A fault that can be \emph{lexically} separated into independent smaller faults. Also called a \emph{higher order} fault, or a \emph{combined fault}. \\
+\noindent\emph{Constituent fault}: A fault that is \emph{lexically} contained in another fault.\\
+\noindent\emph{Atomic fault}: A fault that cannot be \emph{semantically} separated into other independent smaller faults.\\
+\noindent\emph{Composite fault}: A fault that can be \emph{semantically} separated into independent smaller faults. \\
+\noindent\emph{Traditional coupling ratio ($C$)}: The ratio between the percentage of complex faults detected and the percentage of simple faults that were detected by a test suite.\\
+\noindent\emph{\KappaT ($\kappa$)}: The ratio between the percentage of complex faults detected by the same set of test cases that detected the constituent simple faults, and the percentage of constituent simple faults detected.\\
+% DONE: clarify what happens when the \finput of the mutant is different, or add it to assumptions
+% WONTFIX: e.g. for a constant program that does not take input.
+\noindent\emph{\fInput of a function}: The \finput of a function is the set of all values a function can take as inputs (this is practically the input type of a function).\\
+% DONE: clarify what happens when the \foutput of the mutant is different, or add it to assumptions
+% DONE: e.g when multiple elements in \finput maps to the same \foutput (use co-domain rather than range/image)
+\noindent\emph{\fOutput of a function}: The \foutput of a function is the set of all values that a function can produce when it is provided with a valid input from its \finput (this is practically the output type of a function).\\
+\noindent\emph{Range of a function}: The \emph{range} of a function is the set of all values in \foutput that directly maps to a value in the \finput.\\
+\noindent\emph{Finite \finput and \foutput}: We assume that the set of possible input values, and the set of output values corresponding to them, are finite.\\
+%TODO: explain dynamic languages: They have an almost infinite domain and co-domain.
+\noindent\emph{Total functions}: Functions where an output is defined for all elements in its \finput.\\
+\noindent\emph{Syntactic neighborhood}: The set of functions that can be reached from a given function by modifying its \emph{syntactical representation in a given language} a given number of times.\\
+\noindent\emph{Degenerate function}: A function which is not \emph{bijective} from \emph{domain} to \emph{range}. If $n$ values in \emph{domain} maps to duplicate values in \emph{range}, it is called an $n$-degenerate function.
+\caption{Terms used in this paper}
+\label{box:terms}
+\end{infobox}

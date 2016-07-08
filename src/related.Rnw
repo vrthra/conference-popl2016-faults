@@ -1,0 +1,166 @@
+\section{Related Work}
+\label{sec:related}
+
+Fault masking in digital circuits was studied before it was studied in
+software. Dias~\cite{dias1975fault} studies the problem of fault masking, and
+derives an algebraic expression that details the number of faults to be
+considered for detection of all multiple faults.
+
+Coupling effect was first studied under the aegis of \emph{mutation analysis}.
+Hence we review the general mutation analysis research first.
+The idea of mutation analysis was first proposed by 
+Lipton~\cite{lipton1971fault}, and its main concepts were formalized by
+DeMillo et al. in the ``Hints''~\cite{demillo1978hints} paper. The first
+implementation of mutation analysis was provided in the PhD thesis of
+Budd~\cite{budd1980theoretical} in 1980.
+Previous research in mutation
+analysis~\cite{budd1980mutation,mathur1994empirical,offutt1996subsumption}
+suggests that it subsumes different coverage measures, including
+\textit{statement}, \textit{branch}, and \textit{all-defs} dataflow
+coverage~\cite{budd1980mutation,mathur1994empirical,offutt1996subsumption}.
+There is also some evidence that the faults produced
+by mutation analysis are similar to real faults in terms of
+error trace produced~\cite{daran1996software} and the ease of
+detection~\cite{andrews2005mutation,andrews2006using}.  Recent research by
+Just et al.~\cite{just2014mutants} using 357 real bugs suggests that the
+mutation score increases with test effectiveness for 75\% of the cases,
+which was better than the 46\% reported for structural coverage.
+
+The validity of mutation analysis rests upon two fundamental assumptions:
+\emph{the competent programmer hypothesis} --- which states that programmers tend
+to make simple mistakes, and the \emph{coupling effect} --- which states that test
+cases capable of detecting faults in isolation continue to be effective even
+when faults appear in combination with other faults~\cite{demillo1978hints}.
+\Thece was first validated by Lipton et
+al.~\cite{lipton1978the,demillo1978hints} up to fourth order by sampling.
+Offutt~\cite{offutt1989thecoupling,offutt1992investigations} investigated second
+order exhaustively, and sampled until $3^{rd}$ order mutants.
+Langdon et al.~\cite{langdon2010efficient} using 85 first order mutants of
+\emph{triangle} program and $16,383$ tests observed that tests that kill more
+first order mutants kill proportionately more second and third order mutants.
+Morell~\cite{morell1990atheory} provided a theoretical treatment
+of fault based testing. Morell suggested that the competent programmer
+hypothesis is same as \emph{alternate sufficiency} in fault based testing
+which suggests that at least one of the alternates in the arena being considered
+is the correct version, and also provided a formal treatment of the
+coupling effect~\cite{morell1987amodel}
+(i.e. the assumption is that fault masking has low probability of occurrence).
+Morell~\cite{morell1983a} also provides a proof that no general algorithm exists
+to identify existence of coupling between faults.
+Wah et al.~\cite{wah1995fault,wah2000atheoretical,wah2001theoretical,wah2003ananalysis} using a
+simple model of finite functions (the \emph{q-function} model, where \emph{q}
+represents the number of functions thus composed) showed that the survival ratio of first and
+second order test sets are respectively $\frac{1}{n}$ and $\frac{1}{(n^2 - n)}$
+where $n$ is the order of the \finput~\cite{jia2011analysis}.
+A major finding of Wah is that \emph{the coupling effect weakens as the system
+size (in terms of number of functions in an execution path) increases (i.e. $q$ increases),
+and it becomes unreliable when the system size nears the domain of functions}.
+Another important finding was that \emph{minimization of test sets has a
+detrimental effect}. That is, for $n$ faults, one should use $n$ test cases, with
+each test case able to detect $n-1$ faults (rather than a single fault) to
+ensure that the test suite minimizes the risk of missing higher order faults due
+to fault masking.
+Kapoor~\cite{kapoor2006formal} proved the existence of \thece on
+logical faults.
+The competent programmer hypothesis was quantified recently by Gopinath et al.~\cite{gopinath2014mutations}.
+Voas et al.~\cite{voas1993semantic} and later Woodward et al.~\cite{woodward2000testability}
+suggests that the \emph{domain} to
+\emph{range} ratio has an impact in hiding faults. Specifically, functions
+with a high \emph{DRR} tend to mask faults. A similar measure is Dynamic Range to Domain
+ratio studied by Al-Khanjari et al.~\cite{alkhanjari2003investigating}. They
+found that for some programs there is a strong relationship between the
+ratio and testability, but it is weak for others.
+
+Androutsopoulos et al.~\cite{androutsopoulos2014an} suggested an
+approach using information theoretic measures to study failed error
+propagation. It was also found that one in ten tests suffered from failed
+error propagation. Clark et al.~\cite{clark2012squeeziness} found that
+likelihood of collisions were strongly correlated with an information theoretic
+measure called \emph{squeeziness}, which is related to the amount of information
+destroyed after applying the function to its input. Hence choosing a path for
+tests that minimize squeeziness would reduce fault masking.
+
+A fruitful area of research has been reducing the cost of mutation
+analysis, broadly categorized as \textit{do smarter}, \textit{do
+faster}, and \textit{do fewer} by Offutt et al.~\cite{offutt2001mutation}.
+The \textit{do smarter} approaches include space-time trade-offs, weak
+mutation analysis, and parallelization of mutation analysis. The \textit{do
+faster} approaches include mutant schema generation, code patching, and
+other methods to make the mutation analysis faster as a whole. Finally, the
+\textit{do fewer} approaches try to reduce the number of mutants examined,
+and include selective mutation and mutant sampling.
+
+\begin{comment}
+Various studies have tried to tackle the problem of approximating the full
+mutation score without running a full mutation analysis.  The idea of
+using only a subset of mutants (\textit{do fewer}) was conceived first
+by Budd~\cite{budd1980mutation} and Acree~\cite{acree1980mutation}
+who showed that using just 10\% of the mutants was sufficient to
+achieve 99\% accuracy of prediction for the final mutation score. This
+idea was further investigated by Mathur~\cite{mathur1991performance},
+Wong et al.~\cite{wong1993mutation,wong1995reducing}, and Offutt et
+al.~\cite{offutt1993experimental} using the Mothra~\cite{demillo1988an} mutation
+operators for FORTRAN.  Lu Zhang et al.~\cite{zhang2010isoperator} compared
+operator-based mutant selection techniques to random mutant sampling,
+and found that random sampling performs as well as the operator selection
+methods.  Lingming Zhang et al.~\cite{zhang2013operator} compared various
+forms of sampling such as stratified random sampling based on operator strata,
+stratified random sampling based on program element strata, and a combination
+of the two. They found that stratified random sampling when strata were
+used in conjunction performed best in predicting the final mutation score,
+and as few as 5\% mutants was sufficient sample for a 99\% correlation with the actual
+mutation score. Recently, it was found~\cite{gopinath2015howhard} that $9,604$
+mutants were sufficient for obtaining $1\%$ accuracy for $99\%$ of the projects,
+irrespective of the independence of mutants, or their total population.
+\end{comment}
+
+An important area of research when considering \thece is that of
+higher order mutants~\cite{jia2008constructing,jia2009higher,nguyen2014problems}. The important
+idea here is that of subsuming higher order mutants, which are mutants that are
+harder to kill than their constituent mutants. These are mutants where there is
+at least a partial masking of effect of the first mutant by the second mutant.
+While incidence of such mutants are low (as our results show), they are
+important for the simple reason that they represent the hard to find bugs that
+tend to interact, and hence represent a different class of bugs.
+
+Our research is an extension of the theoretical work of Wah~\cite{wah2000atheoretical}
+and Offutt~\cite{offutt1989thecoupling,offutt1992investigations}. The
+major theoretical difference from Wah~\cite{wah2000atheoretical} is that, given
+a pair of faulty functions that compose, we try to find the probability that,
+for given test data, the second function masks the error
+produced by the first one.  On the other hand, Wah~\cite{wah2000atheoretical}
+tries to show that \thece exists considering the \emph{entire}
+program composed of \emph{q} functions, each having a single fault (given by
+\emph{q} in the \emph{q}-function model).
+% TODO: multi-fault functions. -- change in domain.
+Next, Wah~\cite{wah2000atheoretical} assumes semantic separability of all
+complex faults. However, as we show, there exist a class of complex faults that
+are not semantically separable. We make this restriction clear.
+%Wah~\cite{wah2000atheoretical}
+%only considers functions which have same \finput $\mathbb{N}$ as input and output.
+% Next, we use \emph{combinatory-calculus}, a formalism which is equivalent
+% in power to any other representation of programs. Its use allows conversion from,
+% and to, any other representation of computable programs. The use of
+% \emph{combinatory-calculus} is important in that our analysis
+% (and the analysis of Wah~\cite{wah2000atheoretical}) depends on separability of
+% faults. This can be achieved \emph{if and only if} the faults can be separated
+% in the combinatory calculus form. This restriction is not made precise in
+% Wah~\cite{wah2000atheoretical}. The use of \lcalc and
+% \emph{combinatory logic} also justifies the use of single parameter functions,
+% which is assumed as given in Wah~\cite{wah2000atheoretical}.
+Further, our
+analysis shows that the probability of coupling is related to the \foutput,
+not the \finput, as Wah~\cite{wah2000atheoretical} suggests. In fact,
+Wah~\cite{wah2000atheoretical} considers only functions which have exactly same
+\emph{domain} and \emph{range}, and hence are more restricted than our analysis.
+Finally, we show that even if syntax is considered, our analysis results remains
+valid.
+
+With regard to the work by Offutt~\cite{offutt1992investigations}, the primary
+difference is in the empirical relation we attempt to demonstrate. While
+Offutt~\cite{offutt1992investigations} evaluates the traditional coupling
+effect, and shows the empirical relation with respect to \emph{all} simple
+faults and their combinations, we aim to demonstrate the \efaultT
+and evaluate the relation between any pair of faults, and the combined fault
+including both.
+
